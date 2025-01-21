@@ -1,0 +1,391 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Reveal.js Presentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/sky.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    <style>
+        /* Keep existing heading text-transform override */
+        h1, h2, h3, h4, h5, h6 {
+            text-transform: none !important; /* Remove uppercase styling */
+        }
+
+        /* Remove extra lines from <pre> and <code> */
+        pre, code {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 0.8em !important; /* Adjust font size as needed */
+            line-height: 1; /* Improve readability */
+        }
+
+        /* Enable auto-resize for sections */
+        .reveal section {
+            overflow: auto !important; /* Enable scrolling for overflowing content */
+            padding: 0; /* Remove extra padding */
+        }
+
+        /* Prevent unnecessary space in syntax highlighting */
+        code[class*="language-"] {
+            white-space: pre !important; /* Maintain preformatted text */
+        }
+    </style>
+
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section>
+            <h2>Transactional outbox pattern</h2>
+            <p>Helsinki Gophers meetup</p>
+            <p>22 Jan 2025</p>
+            <p>Nikolay Kuznetsov</p>
+            <p>@nikolayk812</p>
+        </section>
+
+        <section>
+            <h2>About me</h2>
+            <p>Senior software engineer @Zalando Oy</p>
+            <p>C → Java → Kotlin → Go</p>
+            <p>Conference speaker in 2019/20</p>
+            <p>ice-skating, kayaking, hiking, chess</p>
+            <p>learning Finnish, Swedish, Italian</p>
+        </section>
+
+        <section>
+            <h2>
+                About <span style="color: orange;">Zalando</span>
+            </h2>
+            <p>Go-to-destination for fashion and lifestyle in Europe</p>
+            <p>25 countries, ~50 millions active customers</p>
+            <p>9 tech hubs, including Helsinki with ~150 employees</p>
+        </section>
+
+        <section>
+            <h2>Dual write problem</h2>
+            <img src="images/dual_write.png" alt="">
+        </section>
+
+        <section>
+            <h2>Dual write problem</h2>
+            <ul>
+                <li>ServiceA avoids direct sync HTTP/gRPC calls to ServiceB</li>
+                <li>Data consistency challenge if one of writes fails</li>
+                <li>Messages could be events notifications and state transfers</li>
+                <li>Databases: PostgreSQL, MySQL, MariaDB, etc</li>
+                <li>Message brokers: Kafka, SNS, NATS, etc</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Naive solutions</h2>
+            <ol>
+                <li>Write to DB first, then write to broker</li>
+                <li>Write to broker first, then write to DB</li>
+                <li>Write to broker from a DB transaction, then commit</li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>Database first</h2>
+            <img src="images/db_first.png" alt="">
+        </section>
+
+        <section>
+            <h2>Message broker first</h2>
+            <img src="images/broker_first.png" alt="">
+        </section>
+
+        <section>
+            <h2>Message from transaction</h2>
+            <img src="images/tx_send.png" alt="">
+        </section>
+
+        <section>
+            <h2>Proper solutions</h2>
+            <ul>
+                <li>Transactional outbox pattern</li>
+                <li>Change data capture (CDC)</li>
+                <li>Mix of them</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Transactional outbox pattern</h2>
+            <img src="images/outbox_pattern.png" alt="">
+        </section>
+
+        <section>
+            <h2>Transactional outbox pattern</h2>
+            <ul style="list-style: none;">
+                <li>+ Atomicity: domain entity vs outbox message</li>
+                <li>+ At least once delivery to message broker</li>
+                <li>- Boilerplate code, deployment unit (cronjob)</li>
+                <li>- Message consumer might need to deduplicate</li>
+                <li>- Outbox table polling introduces delay</li>
+                <li>- Autovacuum settings tuning</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Change data capture intro</h2>
+            <p>keywords: write ahead log (WAL), logical replication, Debezium</p>
+            <ul style="list-style: none;">
+                <li>+ Works on business and/or outbox tables</li>
+                <li>+ Near real time</li>
+                <li>+ No need for explicit SELECT/UPDATE</li>
+                <li>- Complex low-level protocol</li>
+                <li>- Not many mature products in Go ecosystem, AFAIK</li>
+            </ul>
+        </section>
+
+        <section>
+            <img src="images/talk_cheap.jpg" alt="">
+        </section>
+
+        <section>
+            <h2>pgx-outbox</h2>
+            <img src="images/pgx_outbox.png" alt="">
+            <img src="images/gh_qr.png" alt="" style="position: absolute; top: 50%; left: 62%; transform: translate(-50%, -50%); width: 200px;">
+        </section>
+
+        <section>
+            <h2>pgx driver</h2>
+            <ul>
+                <li>for Postgres, high performance</li>
+                <li>11K stars at GitHub</li>
+                <li>different interface from <i>database/sql</i></li>
+                <li>can be adapted to <i>database/sql</i></li>
+                <li><i>lib/pq</i> is in maintenance mode</li>
+            </ul>
+        </section>
+
+
+
+        <section>
+            <h2>Outbox message</h2>
+            <pre><code class="language-golang">
+ type Message struct {
+
+	 ID int64 // generated by Postgres
+
+	 Broker string `validate:"required"`
+
+	 Topic string `validate:"required"`
+
+	 Metadata map[string]string // optional
+
+	 Payload []byte `validate:"required,json"`
+
+ }
+            </code></pre>
+        </section>
+        <section>
+            <h2>Outbox table</h2>
+            <pre><code class="language-sql"> --table name is customizable
+
+ CREATE TABLE IF NOT EXISTS outbox_messages
+ (
+     id           BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+
+     broker       TEXT                                NOT NULL,
+     topic        TEXT                                NOT NULL,
+     metadata     JSONB,
+     payload      JSONB                               NOT NULL,
+
+     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+     published_at TIMESTAMP
+ );</code></pre>
+        </section>
+
+        <section>
+            <h2>Outbox writer</h2>
+            <pre><code class="language-golang">
+ type Writer interface {
+
+     // Tx is empty interface to support both pgx.Tx and *sql.Tx
+     Write(ctx, tx Tx, message Message) (int64, error)
+
+     // pgx transaction only to invoke SendBatch and Prepare methods
+     WriteBatch(ctx, tx pgx.Tx, messages []Message) ([]int64, error)
+
+ }</code></pre>
+        </section>
+        </section>
+        <section>
+            <h2>Add outbox writer</h2>
+            <pre><code class="language-golang">
+ type repo struct {
+
+	   pool *pgxpool.Pool
+
+     // new fields to use pgx-outbox
+	   writer outbox.Writer
+	   messageMapper ToMessageFunc[User] // can be a param instead
+
+ }
+    </code></pre>
+        </section>
+        <section>
+            <h2>Use outbox writer</h2>
+            <pre><code class="language-golang">
+ func (r *repo) CreateUser(ctx, user User) (u User, txErr error) {
+     // create a transaction, commit/rollback in defer()
+
+     user, err = r.createUser(ctx, tx, user) // INSERT INTO users
+     if err != nil {
+         return u, fmt.Errorf("createUser: %w", err)
+     }
+
+     message, err := r.messageMapper(user)
+     // if err != nil {
+
+     _, err = r.writer.Write(ctx, tx, message) // INSERT INTO outbox_messages
+     // if err != nil {
+
+
+     return user, nil
+}
+    </code></pre>
+        </section>
+
+        <section>
+            <h2>Transaction handling</h2>
+            <pre><code class="language-golang">
+ func (r *repo) CreateUser(ctx, user User) (u User, txErr error) {
+
+	   tx, commitFunc, err := r.beginTx(ctx) // pool.Begin(ctx)
+	   // if err != nil {
+	   defer func() {
+        // commit or rollback depending on txErr
+        if cErr := commitFunc(txErr); cErr != nil {
+            txErr = fmt.Errorf("commitFunc: %w", cErr)
+        }
+     }()
+
+     user, err = r.createUser(ctx, tx, user)
+    </code></pre>
+        </section>
+
+        <section>
+            <h2>Demo outbox writer</h2>
+            <img src="images/writer_example.png" alt="">
+        </section>
+
+        <section>
+            <h2>Demo results</h2>
+            <img src="images/outbox_table_example.png" alt="">
+            <img src="images/tracing_example.png" alt="">
+        </section>
+
+        <section>
+            <h2>Message relay</h2>
+            <img src="images/forwarder.png" alt="">
+        </section>
+
+
+        <section>
+            <h2>Outbox forwarder</h2>
+            <pre><code class="language-golang">
+  type Forwarder interface {
+      Forward(ctx, limit int) (ForwardOutput, error)
+  }
+
+  type forwarder struct {
+	    reader    Reader
+	    publisher Publisher
+	    filter    MessageFilter // optional
+  }
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Demo outbox forwarder</h2>
+            <img src="images/forwarder_demo.png" alt="">
+        </section>
+
+        <section>
+            <h2>Demo results</h2>
+            <img src="images/forwarder_results.png" alt="">
+        </section>
+
+        <section>
+            <h2>Demo SQS reader</h2>
+            <img src="images/sqs_reader.png" alt="">
+        </section>
+
+        <section>
+            <h2>Demo results</h2>
+            <img src="images/sqs_reader_demo.png" alt="">
+        </section>
+
+        <section>
+            <h2>Demo recap</h2>
+            <img src="images/whole_demo.png" alt="">
+        </section>
+
+        <section>
+            <h2>pgx-outbox recap</h2>
+            <p>Simple, generic, extensible</p>
+            <p>Writer supports <i>pgx</i> and <i>database/sql</i> tx</p>
+            <p>Reader, Forwarder use <i>pgx</i></p>
+            <p>Test coverage 80%</p>
+
+            <img src="images/gh_qr.png" alt="" style="position: absolute; right: 5%; top: 50%; transform: translateY(-50%); height: 250px;">
+        </section>
+
+        <section>
+            <h2>Alternatives</h2>
+            <ul>
+                <li>watermill-sql: SQL Pub/Sub on top of Watermill library</li>
+                <li>dataddo/pgq: general queue on top of Postgres</li>
+                <li>jackc/pglogrepl: Postgres logical replication, low-level</li>
+                <li>Trendyol/go-pq-cdc: CDC for Postgres</li>
+                <li>PeerDB: streaming from Postgres to data warehouses, queues</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Testing in pgx-outbox</h2>
+            <p>Testcontainers: Postgres, LocalStack modules</p>
+            <p>Mocks: vektra/mockery</p>
+            <p>Suite: stretchr/testify/suite</p>
+        </section>
+
+        <section>
+            <h2>Future plans</h2>
+            <p>Add support for CDC/WAL-based Reader</p>
+            <p>Investigate capabilities of PeerDB</p>
+        </section>
+
+        <section>
+            <h2>Q & A</h2>
+            <h3>Thank you!</h3>
+            <p>@nikolayk812</p>
+        </section>
+
+
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>
+    Reveal.initialize({
+        width: "89%", // Use a percentage to make slides responsive
+        height: "89%",
+        controls: true,
+        progress: true,
+        slideNumber: true,
+        history: true,
+        center: true,
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+    });
+
+    hljs.highlightAll(); // Initialize code highlighting
+</script>
+</body>
+</html>
