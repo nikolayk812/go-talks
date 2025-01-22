@@ -32,6 +32,12 @@
         code[class*="language-"] {
             white-space: pre !important; /* Maintain preformatted text */
         }
+
+        .fit-height {
+            max-height: 80%; /* Adjust to fit the image within the slide height */
+            max-width: 100%; /* Ensure it doesn't overflow horizontally */
+            object-fit: contain; /* Maintain the aspect ratio */
+        }
     </style>
 
 </head>
@@ -283,7 +289,7 @@
 
         <section>
             <h2>Message relay</h2>
-            <img src="images/forwarder.png" alt="">
+            <img class="fit-height" src="images/forwarder.png" alt="">
         </section>
 
 
@@ -335,7 +341,7 @@
             <p>Test coverage 80%</p>
 
             <img src="images/gh_qr.png" alt=""
-                 style="position: absolute; right: 5%; top: 50%; transform: translateY(-50%); height: 250px;">
+                 style="position: absolute; right: 5%; top: 50%; transform: translateY(-50%); height: 225px;">
         </section>
 
         <section>
@@ -354,6 +360,7 @@
             <p>Testcontainers: Postgres, LocalStack modules</p>
             <p>Mocks: vektra/mockery</p>
             <p>Suite: stretchr/testify/suite</p>
+            <p>Linters: testifylint</p>
         </section>
 
         <section>
