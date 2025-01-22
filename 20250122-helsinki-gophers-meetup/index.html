@@ -127,7 +127,7 @@
                 <li>- Boilerplate code, deployment unit (cronjob)</li>
                 <li>- Message consumer might need to deduplicate</li>
                 <li>- Outbox table polling introduces delay</li>
-                <li>- Autovacuum settings tuning</li>
+                <li>- Autovacuum settings tuning due to MVCC</li>
             </ul>
         </section>
 
@@ -361,7 +361,8 @@
         <section>
             <h2>Future plans</h2>
             <p>Add support for CDC/WAL-based Reader</p>
-            <p>Investigate capabilities of PeerDB</p>
+            <p>Explore capabilities of PeerDB</p>
+            <p>Add support for Kafka, NATS publishers</p>
         </section>
 
         <section>
