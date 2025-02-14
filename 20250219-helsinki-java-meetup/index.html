@@ -1,0 +1,195 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>GenAI with Langchain4j and Ollama</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/sky.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    <style>
+        /* Keep existing heading text-transform override */
+        h1, h2, h3, h4, h5, h6 {
+            text-transform: none !important; /* Remove uppercase styling */
+        }
+
+        /* Remove extra lines from <pre> and <code> */
+        pre, code {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 0.8em !important; /* Adjust font size as needed */
+            line-height: 1; /* Improve readability */
+        }
+
+        /* Enable auto-resize for sections */
+        .reveal section {
+            overflow: auto !important; /* Enable scrolling for overflowing content */
+            padding: 0; /* Remove extra padding */
+        }
+
+        /* Prevent unnecessary space in syntax highlighting */
+        code[class*="language-"] {
+            white-space: pre !important; /* Maintain preformatted text */
+        }
+
+        ul ul {
+            font-size: 80%;
+        }
+
+    </style>
+
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section>
+            <h3>GenAI with Langchain4j and Ollama</h3>
+            <p>Helsinki Java meetup</p>
+            <p>19 Feb 2025</p>
+            <p>Nikolay Kuznetsov</p>
+            <p><a href="https://github.com/nikolayk812">@nikolayk812</a></p>
+        </section>
+
+
+        <section>
+            <h2>About me</h2>
+            <p>Senior software engineer</p>
+            <p>Pre-owned project at <span style="color: orange;">Zalando</span> Helsinki</p>
+            <p>C → Java → Kotlin → Go</p>
+            <p>Author of <i>pgx-outbox</i> library </p>
+        </section>
+
+        <section>
+            <h2>Experience with AI</h2>
+            <p>ChatGPT, GitHub Copilot, Claude</p>
+            <p>
+                Pet project with OpenAI API calls
+            </p>
+        </section>
+
+        <section>
+            <h2>Ollama</h2>
+            <p>Like Docker but for LLMs</p>
+            <p>Local inference, minimal setup</p>
+            <p>Written in Go, uses <i>llama.cpp</i></p>
+            <p>126K stars at GitHub</p>
+
+            <img src="images/ollama_logo.png" alt=""
+                 style="position: absolute; top: 50%; left: 85%; transform: translate(-50%, -50%); width: 200px;">
+        </section>
+
+        <section>
+            <h2>Stargazers</h2>
+            <p>OpenJDK 20K</p>
+            <p>Kotlin 50K</p>
+            <p>Spring 57K</p>
+            <p>Kubernetes 113K</p>
+            <p>Golang 125.7K</p>
+        </section>
+
+        <section>
+            <h2>Ollama demo</h2>
+            <pre><code class="language-bash">
+        > ollama pull llama3.2
+
+        > ollama run llama3.2
+
+        > ollama ps
+
+        >>> Please, briefly compare Java and Go
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Ollama APIs</h2>
+            <p>Ollama-style: <i>/api/generate</i></p>
+            <p>OpenAI-compatible: <i>/v1/chat/completions</i></p>
+
+            <pre><code class="language-bash">
+        curl -X POST http://localhost:11434/api/generate \
+             -H "Content-Type: application/json" \
+             -d '{
+               "model": "llama3.2",
+               "prompt": "Please, briefly compare Java and Go",
+               "stream": false
+             }'
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Langchain4j + Ollama </h2>
+            <pre><code class="language-java">
+        import dev.langchain4j.model.chat.ChatLanguageModel;
+        import dev.langchain4j.model.ollama.OllamaChatModel;
+
+        ChatLanguageModel model = OllamaChatModel.builder()
+                .baseUrl("http://localhost:11434")
+                .modelName("llama3.2:1b")
+                .build();
+
+        var answer = model.chat("Why Java is still awesome in 2025?");
+
+        log.info("Response from LLM -> {}", answer);
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Chat Language Model</h2>
+            <pre><code class="language-java">
+        package dev.langchain4j.model.chat;
+
+        public interface ChatLanguageModel {
+
+            // main API to interact with a chat model
+            default ChatResponse chat(ChatRequest chatRequest)
+
+            default String chat(String userMessage)
+
+            // see also:
+            // - ChatMessage
+            // - StreamingChatLanguageModel
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Langchain4j + OpenAI </h2>
+            <pre><code class="language-java">
+        import dev.langchain4j.model.openai.OpenAiChatModel;
+
+        var model = OpenAiChatModel.builder()
+                .apiKey(System.getenv("OPENAI_API_KEY"))
+                .modelName("gpt-4o")
+                .build();
+
+        var answer = model.chat("Why Java is still awesome in 2025?");
+            </code></pre>
+        </section>
+
+
+        <section>
+            <h2>Thank you!</h2>
+            <p><a href="https://github.com/nikolayk812/genai-java">https://github.com/nikolayk812/genai-java</a></p>
+        </section>
+
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>
+    Reveal.initialize({
+        width: "89%", // Use a percentage to make slides responsive
+        height: "89%",
+        controls: true,
+        progress: true,
+        slideNumber: true,
+        history: true,
+        center: true,
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+    });
+
+    hljs.highlightAll(); // Initialize code highlighting
+</script>
+</body>
+</html>
