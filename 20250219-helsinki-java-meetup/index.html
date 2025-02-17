@@ -98,6 +98,8 @@
         > ollama ps
 
         >>> Please, briefly compare Java and Go
+
+        >>> /bye
             </code></pre>
         </section>
 
@@ -139,16 +141,13 @@
             <pre><code class="language-java">
         package dev.langchain4j.model.chat;
 
+
         public interface ChatLanguageModel {
 
             // main API to interact with a chat model
             default ChatResponse chat(ChatRequest chatRequest)
 
             default String chat(String userMessage)
-
-            // see also:
-            // - ChatMessage
-            // - StreamingChatLanguageModel
             </code></pre>
         </section>
 
@@ -166,6 +165,74 @@
             </code></pre>
         </section>
 
+        <section>
+            <h2>Langchain4j demo</h2>
+            <img src="images/langchain4j_demo.png" alt="" width="700">
+        </section>
+
+        <section>
+            <h2>Streaming model</h2>
+            <pre><code class="language-java">
+    var model = OllamaStreamingChatModel.builder().baseUrl("http://localhost:11434").modelName("llama3.2").build();
+
+    model.chat("Provide a long explanation why Java is awesome",
+            new StreamingChatResponseHandler() {
+                public void onPartialResponse(String token) {
+                    out.print(token);
+                }
+
+                public void onError(Throwable error) {
+                    // handle error
+                }
+
+                public void onCompleteResponse(ChatResponse response) {
+                    out.println();
+                }
+            });
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Streaming pitfalls</h2>
+            <p>Langchain4j is still 1.0.0-beta1</p>
+            <p><i>model.chat()</i> blocks for OpenAI</p>
+            <p><i>model.chat()</i> is async call for Ollama</p>
+        </section>
+
+        <section>
+            <h2>Streaming demo</h2>
+            <p>Using <i>CompletableFuture</i></p>
+            <p>and <i>Thread.startVirtualThread</i></p>
+            <p>Server-Sent Events (SSE)</p>
+        </section>
+
+        <section>
+            <h2>Chat</h2>
+            <pre><code class="language-java">
+    var scanner = new Scanner(System.in);
+    var conversation = synchronizedList(new ArrayList&lt;ChatMessage&gt;());
+
+    while (true) {
+        var userInput = scanner.nextLine();
+        conversation.add(UserMessage.from(userInput));
+
+        model.generate(conversation,
+            new StreamingResponseHandler<>() {
+                public void onComplete(Response&lt;AiMessage&gt; response) {
+                    conversation.add(response.content());
+                    out.println("You: ");
+                }
+        });
+    }
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Chat demo</h2>
+            <p>Conversion history in each request</p>
+            <p>Watch out for <i>context length / window</i></p>
+            <p>(128K tokens for Llama 3.2)</p>
+        </section>
 
         <section>
             <h2>Thank you!</h2>
