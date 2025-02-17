@@ -106,7 +106,6 @@
         <section>
             <h2>Ollama APIs</h2>
             <p>Ollama-style: <i>/api/generate</i></p>
-            <p>OpenAI-compatible: <i>/v1/chat/completions</i></p>
 
             <pre><code class="language-bash">
         curl -X POST http://localhost:11434/api/generate \
@@ -117,6 +116,16 @@
                "stream": false
              }'
             </code></pre>
+
+            <p>OpenAI-compatible: <i>/v1/chat/completions</i></p>
+        </section>
+
+        <section>
+            <h2>Talking to LLMs</h2>
+            <p><b>Langchain4j</b></p>
+            <p>Spring AI</p>
+            <p>Official SDKs: OpenAI, AWS, etc</p>
+
         </section>
 
         <section>
@@ -264,10 +273,36 @@
         </section>
 
         <section>
-            <h2>Glossary</h2>
-            <p>AG</p>
-            <p>embeddings</p>
-            <p>RAG</p>
+            <h3><i>Augmented Generation (AG)</i></h3>
+            <p>"prompt engineering" at server side</p>
+        </section>
+
+        <section>
+            <h3><i>Embeddings</i></h3>
+            <p>numerical vectors that represent</p>
+            <p>the semantic meaning of data</p>
+            <p>in a high-dimensional space</p>
+        </section>
+
+        <section>
+            <h2>Embeddings</h2>
+            <pre><code class="language-java">
+    import dev.langchain4j.data.embedding.Embedding;
+    import dev.langchain4j.store.embedding.CosineSimilarity;
+
+    // model is nomic-embed-text
+    Embedding cat = model.embed("Cat is domesticated animal").content();
+    Embedding ollama = model.embed("Ollama runs LLMs locally").content();
+
+    // float[768] vector; normalized hence: [-1, 1]
+
+    double similarity = CosineSimilarity.between(cat, ollama);
+    log.info("Cosine similarity between embeddings is: {}", similarity);
+            </code></pre>
+        </section>
+
+        <section>
+            <img src="images/embedding.png" alt="" width="700">
         </section>
 
         <section>
