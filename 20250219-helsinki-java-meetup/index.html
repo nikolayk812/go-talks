@@ -229,14 +229,61 @@
 
         <section>
             <h2>Chat demo</h2>
-            <p>Conversion history in each request</p>
+            <p>Conversation history in each request</p>
             <p>Watch out for <i>context length / window</i></p>
             <p>(128K tokens for Llama 3.2)</p>
         </section>
 
         <section>
+            <h2>Image recognition</h2>
+            <pre><code class="language-java">
+        import dev.langchain4j.data.message.*;
+
+
+        var userMessage = UserMessage.from(
+            TextContent.from("What do you see?"),
+            ImageContent.from(
+                readImageInBase64("/computer.jpeg"),
+                "image/jpeg"
+            )
+        );
+
+        var response = model.chat(userMessage);
+            </code></pre>
+            <p>moondream is the tiniest model</p>
+        </section>
+
+        <section>
+            <h2>Image recognition demo</h2>
+            <img src="images/computer.jpeg" alt="">
+            <pre><code class="language-text">
+        The image features a desktop computer setup with a monitor,
+        keyboard, and mouse. The monitor is placed on the right side
+        of the desk, while the keyboard is situated in front of it.
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Glossary</h2>
+            <p>AG</p>
+            <p>embeddings</p>
+            <p>RAG</p>
+        </section>
+
+        <section>
+            <h2>Credits</h2>
+            <p><b>Ignacio López Luna</b>:</p>
+            <p><a href="https://github.com/ilopezluna/generative-ai-with-testcontainers">ilopezluna/generative-ai-with-testcontainers</a>
+            </p>
+
+            <p><b>Manuel de la Peña</b>:</p>
+            <p><a href="https://github.com/mdelapenya/generative-ai-with-testcontainers">mdelapenya/generative-ai-with-testcontainers</a>
+            </p>
+        </section>
+
+        <section>
             <h2>Thank you!</h2>
-            <p><a href="https://github.com/nikolayk812/genai-java">https://github.com/nikolayk812/genai-java</a></p>
+            <p><a href="https://github.com/nikolayk812/genai-java">github.com/nikolayk812/genai-java</a></p>
         </section>
 
     </div>
