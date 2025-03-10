@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Postgres logical replication & PeerDB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/sky.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    <style>
+        /* Keep existing heading text-transform override */
+        h1, h2, h3, h4, h5, h6 {
+            text-transform: none !important; /* Remove uppercase styling */
+        }
+
+        /* Remove extra lines from <pre> and <code> */
+        pre, code {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 0.8em !important; /* Adjust font size as needed */
+            line-height: 1; /* Improve readability */
+        }
+
+        /* Enable auto-resize for sections */
+        .reveal section {
+            overflow: auto !important; /* Enable scrolling for overflowing content */
+            padding: 0; /* Remove extra padding */
+        }
+
+        /* Prevent unnecessary space in syntax highlighting */
+        code[class*="language-"] {
+            white-space: pre !important; /* Maintain preformatted text */
+        }
+
+        ul ul {
+            font-size: 80%;
+        }
+
+    </style>
+
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section>
+            <h3>Postgres logical replication & PeerDB</h3>
+            <p>Helsinki Gophers meetup</p>
+            <p>18 Mar 2025</p>
+            <p><a href="https://www.linkedin.com/in/nkuznetsov/">Nikolay Kuznetsov</a></p>
+            <p><a href="https://github.com/nikolayk812">@nikolayk812</a></p>
+        </section>
+
+
+        <section>
+            <h2>About me</h2>
+            <p>Senior software engineer</p>
+            <p>Pre-owned project at <span style="color: orange;">Zalando</span> Helsinki</p>
+            <p>C → Java → Kotlin → Go</p>
+            <p>Author of <a href="https://github.com/nikolayk812/pgx-outbox">pgx-outbox</a> library </p>
+        </section>
+
+        <section>
+            <h2>PostgreSQL</h2>
+            <p>Reliable and feature-rich</p>
+            <p>Open-source, strong community</p>
+            <p>Very permissive license</p>
+        </section>
+
+        <section>
+            <h2>Why replicating data?</h2>
+            <p>Syncing to a read replica</p>
+            <p>Streaming to a messaging system</p>
+            <p>Ingesting to another database</p>
+        </section>
+
+        <section>
+            <h2>Replication scenarios</h2>
+            <img src="images/scenarios.png" width="900" alt="">
+        </section>
+
+        <section>
+            <h2>Replicating how?</h2>
+            <p>Batch export</p>
+            <p>Physical replication</p>
+            <p><b>Logical replication</b></p>
+        </section>
+
+        <section>
+            <h2>Batch export</h2>
+            <p><i>pg_dump</i> and <i>pg_restore</i></p>
+            <p>COPY TO / FROM</p>
+            <p>not real-time, high load, slow</p>
+        </section>
+
+        <section>
+            <h2>Physical replication</h2>
+            <p>Fast, but requires versions compatibility</p>
+            <p><b>Exact</b> copy of the primary</p>
+            <p>Schema (DDL) + data changes (DML)</p>
+            <p><b>Binary</b> Write-Ahead Log (WAL) shipping</p>
+        </section>
+
+        <section>
+            <h2>Logical replication</h2>
+            <p>Table-level, not full database</p>
+            <p>Write-Ahead Log (WAL) decoding</p>
+            <p>Captures <b>row</b> changes (DML)</p>
+            <p>More flexible, but more complex</p>
+        </section>
+
+        <section>
+            <h2>Write-Ahead Log</h2>
+        </section>
+
+        <section>
+            <h2>pgx driver</h2>
+            <p>most popular Go driver</p>
+            <p>by Jack Christensen</p>
+            <p>11.4K stars on GitHub</p>
+            <p><a href="https://www.youtube.com/watch?v=sXMSWhcHCf8">PGX Top to Bottom</a></p>
+        </section>
+
+        <section>
+            <h2>jackc/pglogrepl</h2>
+        </section>
+
+        <section>
+            <h2>Thank you!</h2>
+        </section>
+
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>
+    Reveal.initialize({
+        width: "89%", // Use a percentage to make slides responsive
+        height: "89%",
+        controls: true,
+        progress: true,
+        slideNumber: true,
+        history: true,
+        center: true,
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+    });
+
+    hljs.highlightAll(); // Initialize code highlighting
+</script>
+</body>
+</html>
