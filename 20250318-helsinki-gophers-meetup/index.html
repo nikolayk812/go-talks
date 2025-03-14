@@ -94,6 +94,24 @@
         </section>
 
         <section>
+            <h3>Write-Ahead Log</h3>
+            <img src="images/wal2.png" alt="" width="580">
+            <div style="font-size: 10px;">https://www.dolthub.com/blog/2024-03-08-postgres-logical-replication/</div>
+        </section>
+
+        <section>
+            <img src="images/pg_architecture.png" alt="" width="800">
+            <div style="font-size: 10px;">https://www.cloudduggu.com/postgresql/architecture/</div>
+        </section>
+
+
+        <section>
+            <h2>WAL</h2>
+            <img src="images/wal_files.png" alt="" width="800">
+            <div style="font-size: 10px">https://www.artie.com/blogs/postgres-write-ahead-logs</div>
+        </section>
+
+        <section>
             <h2>Physical replication</h2>
             <p>Fast, but requires versions compatibility</p>
             <p><b>Exact</b> copy of the primary</p>
@@ -105,24 +123,42 @@
             <h2>Logical replication</h2>
             <p>Table-level, not full database</p>
             <p>Write-Ahead Log (WAL) decoding</p>
-            <p>Captures <b>row</b> changes (DML)</p>
+            <p>Captures <b>row</b> changes (DML):</p>
+            <p><i>INSERT</i>, <i>UPDATE</i>, <i>DELETE</i> operations</p>
             <p>More flexible, but more complex</p>
-        </section>
-
-        <section>
-            <h2>Write-Ahead Log</h2>
         </section>
 
         <section>
             <h2>pgx driver</h2>
             <p>most popular Go driver</p>
-            <p>by Jack Christensen</p>
+            <p>by Jack Christensen @jackc</p>
             <p>11.4K stars on GitHub</p>
             <p><a href="https://www.youtube.com/watch?v=sXMSWhcHCf8">PGX Top to Bottom</a></p>
         </section>
 
         <section>
             <h2>jackc/pglogrepl</h2>
+        </section>
+
+        <section>
+            <h2>Publication</h2>
+            <pre><code class="language-sql">
+ CREATE PUBLICATION pub1 FOR TABLE t1, t2;
+ CREATE PUBLICATION pub2 FOR ALL TABLES;
+ -- WITH (publish = 'insert, update', 'delete', 'truncate');
+ SELECT * FROM pg_publication;
+            </code></pre>
+
+            <p></p>
+
+            <pre><code class="language-go">
+ query := "CREATE PUBLICATION pub1 FOR TABLE t1"
+
+ result := conn.Exec(ctx, query)
+ defer result.Close()
+
+ _, err := result.ReadAll()
+            </code></pre>
         </section>
 
         <section>
