@@ -131,7 +131,7 @@
         <section>
             <h2>pgx driver</h2>
             <p>most popular Go driver</p>
-            <p>by Jack Christensen @jackc</p>
+            <p>by Jack Christensen <a href="https://github.com/jackc">@jackc</a></p>
             <p>11.4K stars on GitHub</p>
             <p><a href="https://www.youtube.com/watch?v=sXMSWhcHCf8">PGX Top to Bottom</a></p>
         </section>
@@ -154,11 +154,26 @@
             <pre><code class="language-go">
  query := "CREATE PUBLICATION pub1 FOR TABLE t1"
 
- result := conn.Exec(ctx, query)
+ result := conn.Exec(ctx, query) // low level *pgconn.PgConn
  defer result.Close()
 
  _, err := result.ReadAll()
             </code></pre>
+        </section>
+
+        <section>
+            <h2>Replication slot</h2>
+
+
+            <pre><code class="language-sql">
+ SELECT pg_create_logical_replication_slot('slot', 'pgoutput');
+ -- temporary slot is automatically dropped when connection is closed
+ SELECT pg_create_logical_replication_slot('tmp_slot', 'pgoutput', true);
+            </code></pre>
+
+            <p></p>
+
+
         </section>
 
         <section>
