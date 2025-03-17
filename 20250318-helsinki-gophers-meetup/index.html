@@ -52,7 +52,7 @@
         </section>
 
         <section>
-            <h3>Types of Headaches</h3>
+            <h4>Types of Headaches</h4>
             <img src="images/headaches.png" alt="" width="450">
         </section>
 
@@ -266,7 +266,7 @@
         <section>
             <h2>Handle data</h2>
 
-            <pre><code>
+            <pre><code class="language-go">
  func handleXLogData(data []byte) error {
     xld, err := pglogrepl.ParseXLogData(data)
 
@@ -286,8 +286,8 @@
 
         <section>
             <h2>Handle inserts</h2>
-            <pre><code>
- func (r *Reader) handleInsert(msg *pglogrepl.InsertMessageV2)
+            <pre><code class="language-go">
+ func handleInsert(msg *pglogrepl.InsertMessageV2)
                 (raw map[string]interface{}, err error) {
 
     for columnIdx, col := range msg.Tuple.Columns {
@@ -305,6 +305,46 @@
             </code></pre>
         </section>
 
+        <section>
+            <img src="images/tired.jpg" alt="" width="700">
+        </section>
+
+        <section>
+            <h2>pgx-outbox WAL</h2>
+            <p><i>pglogrepl</i> wrapper to read only INSERTs</p>
+            <pre><code class="language-go">
+ func NewReader(connStr, table, publication, slot string) (*Reader, error)
+
+ // type RawMessage map[string]interface{}
+ func (r *Reader) Start(ctx) (<-chan RawMessage, <-chan error)
+            </code></pre>
+        </section>
+        
+        <section>
+            <h2>Demo</h2>
+            <img src="images/wal_reader.png" alt="" width="1000">
+        </section>
+
+        <section>
+            <h2>PeerDB</h2>
+            <p>efficient data streaming from Postgres</p>
+            <p>written in Go (and Rust)</p>
+            <p>uses <i>Temporal</i> orchestration engine</p>
+            <p>open-source, Elastic License 2.0 (ELv2)</p>
+        </section>
+
+        <section>
+            <h3>PeerDB</h3>
+            <img src="images/peerdb.png" alt="" width="380">
+            <p>Y-combinator 2023</p>
+            <p>acquired by ClickHouse</p>
+            <p>integrated to ClickPipes</p>
+        </section>
+
+        <section>
+            <h2>Challenges</h2>
+            <p></p>
+        </section>
 
         <section>
             <h2>Thank you!</h2>
