@@ -51,6 +51,11 @@
             <p><a href="https://github.com/nikolayk812">@nikolayk812</a></p>
         </section>
 
+        <section>
+            <h3>Types of Headaches</h3>
+            <img src="images/headaches.png" alt="" width="450">
+        </section>
+
 
         <section>
             <h2>About me</h2>
@@ -82,8 +87,8 @@
         <section>
             <h2>Replicating how?</h2>
             <p>Batch export</p>
-            <p>Physical replication</p>
-            <p><b>Logical replication</b></p>
+            <p>Physical replication (WAL)</p>
+            <p><b>Logical replication</b> (WAL)</p>
         </section>
 
         <section>
@@ -113,18 +118,18 @@
 
         <section>
             <h2>Physical replication</h2>
-            <p>Fast, but requires versions compatibility</p>
+            <p>Fast, but requires compatibility</p>
             <p><b>Exact</b> copy of the primary</p>
             <p>Schema (DDL) + data changes (DML)</p>
-            <p><b>Binary</b> Write-Ahead Log (WAL) shipping</p>
+            <p>Write-Ahead Log <b>shipping</b></p>
         </section>
 
         <section>
             <h2>Logical replication</h2>
             <p>Table-level, not full database</p>
-            <p>Write-Ahead Log (WAL) decoding</p>
+            <p>Write-Ahead Log <b>decoding</b></p>
             <p>Captures <b>row</b> changes (DML):</p>
-            <p><i>INSERT</i>, <i>UPDATE</i>, <i>DELETE</i> operations</p>
+            <p><i>INSERT</i>, <i>UPDATE</i>, <i>DELETE</i>, TRUNCATE</p>
             <p>More flexible, but more complex</p>
         </section>
 
@@ -132,12 +137,16 @@
             <h2>pgx driver</h2>
             <p>most popular Go driver</p>
             <p>by Jack Christensen <a href="https://github.com/jackc">@jackc</a></p>
-            <p>11.4K stars on GitHub</p>
+            <p>11.5K stars on GitHub</p>
             <p><a href="https://www.youtube.com/watch?v=sXMSWhcHCf8">PGX Top to Bottom</a></p>
         </section>
 
         <section>
             <h2>jackc/pglogrepl</h2>
+            <p>decodes logical replication messages</p>
+            <p>includes a basic example</p>
+            <p>350 stars, 170 users</p>
+            <p>not actively maintained</p>
         </section>
 
         <section>
@@ -164,17 +173,138 @@
         <section>
             <h2>Replication slot</h2>
 
-
             <pre><code class="language-sql">
  SELECT pg_create_logical_replication_slot('slot', 'pgoutput');
  -- temporary slot is automatically dropped when connection is closed
  SELECT pg_create_logical_replication_slot('tmp_slot', 'pgoutput', true);
+
+ SELECT * FROM pg_replication_slots;
             </code></pre>
 
             <p></p>
 
-
+            <pre><code class="language-go">
+ pglogrepl.CreateReplicationSlot(ctx, conn, "tmp_slot", "pgoutput",
+    pglogrepl.CreateReplicationSlotOptions{Temporary: true})
+            </code></pre>
         </section>
+
+        <section>
+            <h2>Logical decoding plugins</h2>
+            <p><i>pgoutput</i> - built-in, default</p>
+            <p><i>test_decoding</i> - built-in, only for testing</p>
+            <p><i>wal2json</i> - 3rd party, produces JSON</p>
+            <p><i>decoderbufs</i>, <i>pglogical</i></p>
+        </section>
+
+        <section>
+            <h2>Plugin arguments</h2>
+
+            <pre><code class="language-go">
+ pluginArguments := []string{
+    "proto_version '2'", // versions 3 and 4 are not supported
+    fmt.Sprintf("publication_names '%s'", "pub1"),
+    "messages 'false'",  // pg_logical_emit_message() is not used
+    "streaming 'false'", // receive only committed transactions
+ }
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Start replication</h2>
+
+            <pre><code class="language-sql">
+ START_REPLICATION SLOT tmp_slot LOGICAL 0/16B4F20
+    ("proto_version" '2',
+    "publication_names" 'pub1',
+    "messages" 'false',
+    "streaming" 'false');
+            </code></pre>
+
+            <p></p>
+
+            <pre><code class="language-go">
+ sysIdent, err := pglogrepl.IdentifySystem(ctx, conn)
+
+ pglogrepl.StartReplication(ctx, conn, "tmp_slot", sysIdent.XLogPos,
+    pglogrepl.StartReplicationOptions{PluginArgs: pluginArguments})
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Message loop</h2>
+
+            <pre><code class="language-go">
+ for {
+    var rawMsg pgproto3.BackendMessage
+    rawMsg, err := conn.ReceiveMessage(ctx)
+
+    switch msg.Data[0] {
+    // XLog is historical name for WAL
+    case pglogrepl.XLogDataByteID: // 'w'
+        err = r.handleXLogData(msg.Data[1:]) // actual data
+
+    case pglogrepl.PrimaryKeepaliveMessageByteID: // 'k'
+        err = r.handlePrimaryKeepalive(msg.Data[1:])
+    }
+ }
+            </code></pre>
+        </section>
+
+        <section>
+            <h3>Transactions again</h3>
+            <img src="images/wal2.png" alt="" width="580">
+            <div style="font-size: 10px;">https://www.dolthub.com/blog/2024-03-08-postgres-logical-replication/</div>
+        </section>
+
+        <section>
+            <h3>Replication data</h3>
+            <img src="images/wal3.png" alt="" width="580">
+            <div style="font-size: 10px;">https://www.dolthub.com/blog/2024-03-08-postgres-logical-replication/</div>
+        </section>
+
+        <section>
+            <h2>Handle data</h2>
+
+            <pre><code>
+ func handleXLogData(data []byte) error {
+    xld, err := pglogrepl.ParseXLogData(data)
+
+    logicalMsg, err := pglogrepl.ParseV2(xld.WALData, false)
+
+    switch msg := logicalMsg.(type) {
+    case *pglogrepl.RelationMessageV2:
+        // remember table structure: column names and types
+        r.relations[msg.RelationID] = msg
+
+    case *pglogrepl.InsertMessageV2:
+        var raw map[string]interface{}
+        raw, err = r.handleInsert(msg)
+    }
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Handle inserts</h2>
+            <pre><code>
+ func (r *Reader) handleInsert(msg *pglogrepl.InsertMessageV2)
+                (raw map[string]interface{}, err error) {
+
+    for columnIdx, col := range msg.Tuple.Columns {
+        column, err := r.getRelationColumn(msg.RelationID, columnIdx)
+
+        switch col.DataType {
+        case 'n': // null
+            raw[column.Name] = nil
+        case 't': // text
+            val, err := r.decodeTextColumn(col.Data, column.DataType)
+            raw[column.Name] = val
+        }
+    }
+ }
+            </code></pre>
+        </section>
+
 
         <section>
             <h2>Thank you!</h2>
