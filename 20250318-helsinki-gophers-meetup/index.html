@@ -54,7 +54,7 @@
         <section>
             <h4>Types of Headaches</h4>
             <img src="images/headaches.png" alt="" width="400">
-            <div style="font-size: 16px;">No-traffic AWS RDS with active logical replication slot loses 2GB of disk space every 3 hours</div>
+            <div style="font-size: 16px;">No-traffic AWS RDS with active logical replication slot <a href="https://www.morling.dev/blog/insatiable-postgres-replication-slot/">loses 2GB</a> of disk space every 3 hours</div>
         </section>
 
 
@@ -343,8 +343,11 @@
         </section>
 
         <section>
-            <h2>Challenges</h2>
-            <p></p>
+            <h2>Takeaways</h2>
+            <p>Logical replication powerful but challenging:</p>
+            <p style="font-size: 0.85em;">- acknowledging WAL positions (LSNs)</p>
+            <p style="font-size: 0.85em;">- large transactions, replication lag</p>
+            <p style="font-size: 0.85em;">- initial data load, deletion handling</p>
         </section>
 
         <section>
