@@ -53,7 +53,8 @@
 
         <section>
             <h4>Types of Headaches</h4>
-            <img src="images/headaches.png" alt="" width="450">
+            <img src="images/headaches.png" alt="" width="400">
+            <div style="font-size: 16px;">No-traffic AWS RDS with active logical replication slot loses 2GB of disk space every 3 hours</div>
         </section>
 
 
@@ -129,7 +130,7 @@
             <p>Table-level, not full database</p>
             <p>Write-Ahead Log <b>decoding</b></p>
             <p>Captures <b>row</b> changes (DML):</p>
-            <p><i>INSERT</i>, <i>UPDATE</i>, <i>DELETE</i>, TRUNCATE</p>
+            <p style="font-size: 0.7em;"><i>INSERT</i>, <i>UPDATE</i>, <i>DELETE</i>, TRUNCATE</p>
             <p>More flexible, but more complex</p>
         </section>
 
@@ -191,7 +192,7 @@
 
         <section>
             <h2>Logical decoding plugins</h2>
-            <p><i>pgoutput</i> - built-in, default</p>
+            <p><b><i>pgoutput</i></b> - built-in, default</p>
             <p><i>test_decoding</i> - built-in, only for testing</p>
             <p><i>wal2json</i> - 3rd party, produces JSON</p>
             <p><i>decoderbufs</i>, <i>pglogical</i></p>
@@ -242,10 +243,10 @@
     switch msg.Data[0] {
     // XLog is historical name for WAL
     case pglogrepl.XLogDataByteID: // 'w'
-        err = r.handleXLogData(msg.Data[1:]) // actual data
+        err = handleXLogData(msg.Data[1:]) // actual data
 
     case pglogrepl.PrimaryKeepaliveMessageByteID: // 'k'
-        err = r.handlePrimaryKeepalive(msg.Data[1:])
+        err = handlePrimaryKeepalive(msg.Data[1:])
     }
  }
             </code></pre>
@@ -275,11 +276,11 @@
     switch msg := logicalMsg.(type) {
     case *pglogrepl.RelationMessageV2:
         // remember table structure: column names and types
-        r.relations[msg.RelationID] = msg
+        relations[msg.RelationID] = msg
 
     case *pglogrepl.InsertMessageV2:
         var raw map[string]interface{}
-        raw, err = r.handleInsert(msg)
+        raw, err = handleInsert(msg)
     }
             </code></pre>
         </section>
@@ -291,13 +292,13 @@
                 (raw map[string]interface{}, err error) {
 
     for columnIdx, col := range msg.Tuple.Columns {
-        column, err := r.getRelationColumn(msg.RelationID, columnIdx)
+        column, err := getRelationColumn(msg.RelationID, columnIdx)
 
         switch col.DataType {
         case 'n': // null
             raw[column.Name] = nil
         case 't': // text
-            val, err := r.decodeTextColumn(col.Data, column.DataType)
+            val, err := decodeTextColumn(col.Data, column.DataType)
             raw[column.Name] = val
         }
     }
@@ -348,6 +349,9 @@
 
         <section>
             <h2>Thank you!</h2>
+            <p><a href="https://github.com/jackc/pglogrepl">jackc/pglogrepl</a></p>
+            <p><a href="https://github.com/nikolayk812/pgx-outbox/tree/main/wal">nikolayk812/pgx-outbox/wal</a></p>
+            <p><a href="https://github.com/PeerDB-io/peerdb">PeerDB-io/peerdb</a></p>
         </section>
 
     </div>
