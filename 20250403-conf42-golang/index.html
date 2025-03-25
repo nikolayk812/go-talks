@@ -66,7 +66,7 @@
         </section>
 
         <section>
-            <h2>Testing repository layer</h2>
+            <h2>Repository layer</h2>
             <p>against real database</p>
             <p>engine version same as in production</p>
         </section>
@@ -137,16 +137,16 @@
             <pre><code class="language-go">
  func (s *cartRepoSuite) TestAddItem() {
     // configure test cases
-
-    for _, tc := range testCases {
+    for _, tt := range tests {
         suite.Run(tc.name, func() {
-            err := s.repo.AddItem(ctx, tc.ownerID, tc.item)
-            require.NoError(suite.T(), err)
+            t := suite.T()
 
-            actualCart, err := s.repo.GetCart(ctx, tc.ownerID)
-            require.NoError(suite.T(), err)
+            err := s.repo.AddItem(ctx, tt.ownerID, tt.item)
+            require.NoError(t, err)
 
-            assertCart(t, tc.expectedCart, actualCart) // using go-cmp
+            // get actual cart
+
+            assertCart(t, tt.expectedCart, actualCart) // using go-cmp
         })
     }}
             </code></pre>
@@ -189,6 +189,73 @@
     "golang.org/x/text/currency".Unit
     consider using cmpopts.EquateComparable
     to compare comparable Go types
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Service layer</h2>
+        </section>
+
+        <section>
+            <h2>Generate mocks</h2>
+            <pre><code class="language-go">
+ //go:generate mockery --name=CartRepo --output=. --outpkg=repo
+ //     --structname=MockCartRepo --filename=cart_repo_mock.go
+ type CartRepo interface {
+    GetCart(ctx, ownerID string) (Cart, error)
+    AddItem(ctx, ownerID string, item CartItem) error
+ }
+            </code></pre>
+
+            <p></p>
+
+            <pre><code class="language-bash">
+ > go install github.com/vektra/mockery/v2@latest
+
+ > go generate ./...
+            </code> </pre>
+        </section>
+
+        <section>
+            <h2>Configure mocks</h2>
+            <pre><code class="language-go">
+ tests := []struct {
+    name      string
+    mockSetup func(repo *MockCartRepo) // new field
+ }{
+    {
+        name: "happy case",
+        mockSetup: func(repo *MockCartRepo) {
+            repo.On("AddItem",
+                mock.Anything, mock.AnythingOfType("string"), cartItem).
+                Return(nil)
+        },
+    },
+ }
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Use mocks</h2>
+            <pre><code class="language-go">
+ for _, tt := range tests {
+
+    t.Run(tt.name, func(t *testing.T) {
+        mockRepo := new(MockCartRepo)
+
+        if tt.mockSetup != nil {
+            tt.mockSetup(mockRepo)
+        }
+
+        cartService, err := service.NewCartService(mockRepo)
+        require.NoError(t, err)
+
+        // test cartService
+    }
+
+ }
+
+
             </code></pre>
         </section>
 
