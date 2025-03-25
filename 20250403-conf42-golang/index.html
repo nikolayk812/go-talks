@@ -194,6 +194,21 @@
 
         <section>
             <h2>Service layer</h2>
+            <p>test against repository mocks</p>
+            <p>port in hexagonal</p>
+        </section>
+
+        <section>
+            <h2>Mocks in Go</h2>
+            <p><b><i>vektra/mockery</i></b></p>
+            <p><i>uber-go/mock</i></p>
+            <p><i>matryer/moq</i></p>
+            <p><i>golang/mock*</i></p>
+            <p>manual mocks</p>
+        </section>
+
+        <section>
+            <h2>Mockery</h2>
         </section>
 
         <section>
@@ -238,24 +253,20 @@
         <section>
             <h2>Use mocks</h2>
             <pre><code class="language-go">
- for _, tt := range tests {
+ t.Run(tt.name, func(t *testing.T) {
+    mockRepo := new(MockCartRepo)
 
-    t.Run(tt.name, func(t *testing.T) {
-        mockRepo := new(MockCartRepo)
-
-        if tt.mockSetup != nil {
-            tt.mockSetup(mockRepo)
-        }
-
-        cartService, err := service.NewCartService(mockRepo)
-        require.NoError(t, err)
-
-        // test cartService
+    if tt.mockSetup != nil {
+        tt.mockSetup(mockRepo)
     }
 
+    cartService, err := service.NewCart(mockRepo)
+    require.NoError(t, err)
+
+    // test cartService
+
+    mockRepo.AssertExpectations(t)
  }
-
-
             </code></pre>
         </section>
 
