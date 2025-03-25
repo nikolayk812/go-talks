@@ -118,27 +118,80 @@
  import "github.com/jackc/pgx/v5/pgxpool"
 
 
- func (suite *cartRepoSuite) SetupSuite() {
-    suite.container, connStr, err = startPostgres(ctx)
+ func (s *cartRepoSuite) SetupSuite() {
+    s.container, connStr, err = startPostgres(ctx)
     suite.NoError(err)
 
     pool, err := pgxpool.New(ctx, connStr)
+    repo := repository.New(pool)
  }
 
- func (suite *cartRepoSuite) TearDownSuite() {
-    suite.NoError(suite.container.Terminate(ctx))
+ func (s *cartRepoSuite) TearDownSuite() {
+    suite.NoError(s.container.Terminate(ctx))
  }
              </code></pre>
         </section>
 
         <section>
+            <h2>Attach tests</h2>
             <pre><code class="language-go">
- import "github.com/jackc/pgx/v5/pgxpool"
+ func (s *cartRepoSuite) TestAddItem() {
+    // configure test cases
 
+    for _, tc := range testCases {
+        suite.Run(tc.name, func() {
+            err := s.repo.AddItem(ctx, tc.ownerID, tc.item)
+            require.NoError(suite.T(), err)
 
- pool, err := pgxpool.New(ctx, connStr)
+            actualCart, err := s.repo.GetCart(ctx, tc.ownerID)
+            require.NoError(suite.T(), err)
+
+            assertCart(t, tc.expectedCart, actualCart) // using go-cmp
+        })
+    }}
             </code></pre>
         </section>
+
+        <section>
+            <h2>go-cmp</h2>
+            <p>semantic equality</p>
+            <p>more powerful than <i>reflect.DeepEqual</i></p>
+            <p>customizable using options</p>
+            <p>not official Google product</p>
+        </section>
+
+        <section>
+            <h2>go-cmp</h2>
+            <pre><code class="language-go">
+ func assertCart(t *testing.T, expected, actual Cart) {
+    // custom comparer for golang.org/x/text/currency
+    comparer := cmp.Comparer(func(x, y currency.Unit) bool {
+        return x.String() == y.String()
+    })
+
+    opts := cmp.Options{
+        cmpopts.IgnoreFields(CartItem{}, "CreatedAt"),
+        cmpopts.EquateEmpty(), // treat empty and nil slices equally
+    }
+
+    diff := cmp.Diff(expected, actual, comparer, opts)
+    assert.Empty(t, diff)
+ }
+            </code></pre>
+        </section>
+
+        <section>
+            <h3>Without comparer</h3>
+            <pre><code class="language-go">
+ === RUN   TestCartRepositorySuite/TestAddItem/single_item:_ok
+    options.go:256: test panicked: cannot handle unexported field at
+    {Cart}.Items[0].Price.Currency.index:
+    "golang.org/x/text/currency".Unit
+    consider using cmpopts.EquateComparable
+    to compare comparable Go types
+            </code></pre>
+        </section>
+
 
     </div>
 </div>
