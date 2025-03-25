@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Postgres logical replication & PeerDB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/sky.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    <style>
+        /* Keep existing heading text-transform override */
+        h1, h2, h3, h4, h5, h6 {
+            text-transform: none !important; /* Remove uppercase styling */
+        }
+
+        /* Remove extra lines from <pre> and <code> */
+        pre, code {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 0.8em !important; /* Adjust font size as needed */
+            line-height: 1; /* Improve readability */
+        }
+
+        /* Enable auto-resize for sections */
+        .reveal section {
+            overflow: auto !important; /* Enable scrolling for overflowing content */
+            padding: 0; /* Remove extra padding */
+        }
+
+        /* Prevent unnecessary space in syntax highlighting */
+        code[class*="language-"] {
+            white-space: pre !important; /* Maintain preformatted text */
+        }
+
+        ul ul {
+            font-size: 80%;
+        }
+
+    </style>
+
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section>
+            <h3>Practical guide to testing Go services</h3>
+            <p>Nikolay Kuznetsov</p>
+            <p style="font-size: 0.8em;"><a href="https://github.com/nikolayk812">@nikolayk812</a></p>
+            <img src="images/gopher.png" alt=""
+                 style="position: absolute; top: 55%; left: 80%; transform: translate(-50%, -50%); width: 140px;">
+        </section>
+
+        <section>
+            <h2>About me</h2>
+            <p>Senior software engineer</p>
+            <p>Pre-owned project at <span style="color: orange;">Zalando</span> Helsinki</p>
+            <p>C → Java → Kotlin → Go</p>
+            <p>Author of <a href="https://github.com/nikolayk812/pgx-outbox">pgx-outbox</a> library </p>
+        </section>
+
+        <section>
+            <h2>Principles</h2>
+            <p>Table tests</p>
+            <p><i>stretchr/testify</i> for assertions</p>
+        </section>
+
+        <section>
+            <h2>Testing repository layer</h2>
+            <p>against real database</p>
+            <p>engine version same as in production</p>
+        </section>
+
+        <section>
+            <h2>Testcontainers Go</h2>
+            <pre><code class="language-go">
+ import "github.com/testcontainers/testcontainers-go/modules/postgres"
+
+
+ pgContainer, err := postgres.Run(ctx, "postgres:17.4-alpine",
+    postgres.BasicWaitStrategies(),
+    postgres.WithInitScripts("migrations/01_cart_items.up.sql"),
+ )
+
+ //postgres://postgres:postgres@localhost:32847/postgres?sslmode=disable
+ connStr, err := pgContainer.ConnectionString(ctx, "sslmode=disable")
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Containers lifecycle</h2>
+            <p>not in TestMain</p>
+            <p><i>suite</i> package of stretchr/testify</p>
+        </section>
+
+        <section>
+            <h2>Introduce suite</h2>
+            <pre><code class="language-go">
+ import "github.com/stretchr/testify/suite"
+
+
+ type cartRepoSuite struct {
+    suite.Suite
+
+    container testcontainers.Container
+ }
+
+ // entry point to run all tests in the suite
+ func TestCartRepoSuite(t *testing.T) {
+    suite.Run(t, new(cartRepoSuite))
+ }
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Setup suite</h2>
+            <pre><code class="language-go">
+ import "github.com/jackc/pgx/v5/pgxpool"
+
+
+ func (suite *cartRepoSuite) SetupSuite() {
+    suite.container, connStr, err = startPostgres(ctx)
+    suite.NoError(err)
+
+    pool, err := pgxpool.New(ctx, connStr)
+ }
+
+ func (suite *cartRepoSuite) TearDownSuite() {
+    suite.NoError(suite.container.Terminate(ctx))
+ }
+             </code></pre>
+        </section>
+
+        <section>
+            <pre><code class="language-go">
+ import "github.com/jackc/pgx/v5/pgxpool"
+
+
+ pool, err := pgxpool.New(ctx, connStr)
+            </code></pre>
+        </section>
+
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>
+    Reveal.initialize({
+        width: "89%", // Use a percentage to make slides responsive
+        height: "89%",
+        controls: true,
+        progress: true,
+        slideNumber: true,
+        history: true,
+        center: true,
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+    });
+
+    hljs.highlightAll(); // Initialize code highlighting
+</script>
+</body>
+</html>
