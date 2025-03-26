@@ -66,13 +66,31 @@
         </section>
 
         <section>
-            <h2>Repository layer</h2>
-            <p>against real database</p>
-            <p>engine version same as in production</p>
+            <h2>Domain model</h2>
         </section>
 
         <section>
-            <h2>Testcontainers Go</h2>
+            <h2>Repository layer</h2>
+            <p>against a real database</p>
+            <p style="font-size: 0.9em;">production engine version</p>
+            <p>spin up containers from Go code:</p>
+            <p><i><b>testcontainers-go</b></i>, <i>ory/dockertest</i></p>
+        </section>
+
+        <section>
+            <h2>Testcontainers modules</h2>
+            <p style="font-size: 0.9em;">Postgres</p>
+            <p style="font-size: 0.9em;">Localstack</p>
+            <p style="font-size: 0.9em;">Kafka</p>
+            <p style="font-size: 0.9em;">Ollama</p>
+            <p style="font-size: 0.8em;">30+ more</p>
+
+            <img src="images/testcontainers.png" alt=""
+                 style="position: absolute; top: 50%; left: 75%; transform: translate(-50%, -50%); width: 200px;">
+        </section>
+
+        <section>
+            <h2>Testcontainers</h2>
             <pre><code class="language-go">
  import "github.com/testcontainers/testcontainers-go/modules/postgres"
 
@@ -89,8 +107,10 @@
 
         <section>
             <h2>Containers lifecycle</h2>
-            <p>not in TestMain</p>
-            <p><i>suite</i> package of stretchr/testify</p>
+            <p>prefer <b><i>stretchr/testify/suite</i></b> over</p>
+            <p style="font-size: 0.95em;">- <i>TestMain</i></p>
+            <p style="font-size: 0.95em;">- <i>sync.Once</i></p>
+            <p style="font-size: 0.95em;">- per each test</p>
         </section>
 
         <section>
@@ -161,7 +181,7 @@
         </section>
 
         <section>
-            <h2>go-cmp</h2>
+            <h2>Use <i>go-cmp</i></h2>
             <pre><code class="language-go">
  func assertCart(t *testing.T, expected, actual Cart) {
     // custom comparer for golang.org/x/text/currency
@@ -194,8 +214,9 @@
 
         <section>
             <h2>Service layer</h2>
-            <p>test against repository mocks</p>
-            <p>port in hexagonal</p>
+            <p>pure unit tests (if possible)</p>
+            <p>mock dependencies:</p>
+            <p>repository and other ports</p>
         </section>
 
         <section>
@@ -209,6 +230,9 @@
 
         <section>
             <h2>Mockery</h2>
+            <p>mock generation from interfaces</p>
+            <p><i>testify/mock</i> conventions, simple API</p>
+            <p>the most popular</p>
         </section>
 
         <section>
