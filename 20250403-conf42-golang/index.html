@@ -270,6 +270,34 @@
             </code></pre>
         </section>
 
+        <section>
+            <h2>Data for tests</h2>
+            <p><b><i>brianvoe/gofakeit</i></b></p>
+            <p><i>jaswdr/faker</i></p>
+            <p><i>go-testfixtures</i></p>
+            <p>hardcoded</p>
+        </section>
+
+        <section>
+            <h2>gofakeit</h2>
+            <pre><code class="language-go">
+ import (
+    "github.com/brianvoe/gofakeit"
+    "github.com/google/uuid"
+    "github.com/shopspring/decimal"
+ )
+
+ func fakeCartItem() CartItem {
+    return CartItem{
+        ProductID: uuid.MustParse(gofakeit.UUID()),
+        Price: Money{
+            Amount:   decimal.NewFromFloat(gofakeit.Price(1, 100)),
+            Currency: currency.MustParseISO(gofakeit.CurrencyShort()),
+        },
+    }
+ }
+            </code></pre>
+        </section>
 
     </div>
 </div>
