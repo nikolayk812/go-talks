@@ -323,6 +323,147 @@
             </code></pre>
         </section>
 
+        <section>
+            <h2>HTTP layer</h2>
+            <p>mock service layer</p>
+            <p>handler, router tests with <i>httptest</i></p>
+            <p>also <i>gavv/httpexpect</i>, <i>steinfletcher/apitest</i></p>
+        </section>
+
+        <section>
+            <h2>Gin handler</h2>
+            <pre><code class="language-go">
+ import "github.com/gin-gonic/gin"
+
+ type CartHandler struct {
+    service service.CartService
+ }
+
+ func (h *CartHandler) GetCart(c *gin.Context) {
+    c.JSON(http.StatusOK, cartDTO)
+ }
+
+
+ t.Run(tt.name, func(t *testing.T) {
+    handler, err := rest.NewCart(mockService)
+    require.NoError(t, err)
+
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Invoke handler</h2>
+            <pre><code class="language-go">
+ recorder := httptest.NewRecorder()
+
+ ginContext, _ := gin.CreateTestContext(recorder)
+ ginContext.Params = gin.Params{gin.Param{
+                            Key: "owner_id", Value: tt.ownerID}}
+
+ req, err := http.NewRequest(http.MethodGet, "any_path", nil)
+ ginContext.Request = req
+
+ // func (h *cartHandler) GetCart(c *gin.Context)
+ handler.GetCart(c)
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Assert from recorder</h2>
+            <pre><code class="language-go">
+ handler.GetCart(c)
+
+ assert.Equal(t, tt.wantStatus, recorder.Code)
+
+ if tt.wantStatus == http.StatusOK {
+    var actualCart dto.Cart
+    err := json.Unmarshal(recorder.Body.Bytes(), &actualCart)
+    require.NoError(t, err)
+
+    assertEqualCart(t, tt.wantCart, actualCart)
+ }
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Router vs handler tests</h2>
+            <table style="font-size: 70%;">
+                <thead>
+                <tr>
+                    <th>Characteristic</th>
+                    <th>Handler</th>
+                    <th>Router</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Primary Focus</td>
+                    <td>Handler logic</td>
+                    <td>Routing mechanics</td>
+                </tr>
+
+                <tr>
+                    <td>Key Validation</td>
+                    <td style="font-size: 90%;">
+                        <p>Input processing</p>
+                        <p>Service interactions</p>
+                        <p>Error handling</p>
+                        <p>Edge cases</p>
+                    </td>
+                    <td style="font-size: 90%;">
+                        <p>Route matching</p>
+                        <p>Parameter extraction</p>
+                        <p>Middleware application</p>
+                        <p>Happy path</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Test Depth</td>
+                    <td>Deep, comprehensive</td>
+                    <td>Shallow, broad coverage</td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Router test case</h2>
+            <pre><code class="language-go">
+ {
+    name:   "GetCart",
+    method: http.MethodGet,
+    url:    "/carts/" + owner1,
+    mockFunc: func() {
+        mockService.On("GetCart", mock.Anything, owner1).
+            Return(cart1, nil)
+    },
+    statusCode: http.StatusOK,
+ },
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Router test</h2>
+            <pre><code class="language-go">
+ t.Run(tt.name, func(t *testing.T) {
+    w := httptest.NewRecorder()
+
+    req, err := http.NewRequest(tt.method, tt.url, tt.bodyBytes)
+    req.Header.Set("Content-Type", "application/json")
+
+    router.ServeHTTP(w, req)
+
+    assert.Equal(t, tt.statusCode, w.Code)
+ }
+            </code></pre>
+        </section>
+
+        <section>
+            <h3>Thank you and happy testing!</h3>
+            <p><a href="https://github.com/nikolayk812/go-tests">github.com/nikolayk812/go-tests</a></p>
+        </section>
+
+
     </div>
 </div>
 
