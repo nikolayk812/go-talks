@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Practical guide to testing Go services</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/sky.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/theme/sky.min.css">
     <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <style>
         /* Keep existing heading text-transform override */
         h1, h2, h3, h4, h5, h6 {
@@ -18,8 +18,12 @@
         pre, code {
             margin: 0 !important;
             padding: 0 !important;
-            font-size: 0.8em !important; /* Adjust font size as needed */
             line-height: 1; /* Improve readability */
+        }
+
+        .reveal pre {
+            margin-left: 90px !important; /* Adjust as needed */
+            max-width: 83%;
         }
 
         /* Enable auto-resize for sections */
@@ -45,10 +49,10 @@
     <div class="slides">
         <section>
             <h3>Practical guide to testing Go services</h3>
-            <p>Nikolay Kuznetsov</p>
+            <p>Conf42 Golang</p>
+            <p style="font-size: 0.8em;">4 Apr 2025</p>
+            <p><a href="https://www.linkedin.com/in/nkuznetsov/">Nikolay Kuznetsov</a></p>
             <p style="font-size: 0.8em;"><a href="https://github.com/nikolayk812">@nikolayk812</a></p>
-            <img src="images/gopher.png" alt=""
-                 style="position: absolute; top: 55%; left: 80%; transform: translate(-50%, -50%); width: 140px;">
         </section>
 
         <section>
@@ -544,8 +548,8 @@
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script>
     Reveal.initialize({
         width: "89%", // Use a percentage to make slides responsive
