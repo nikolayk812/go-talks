@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>Postgres logical replication & PeerDB</title>
+    <title>Practical guide to testing Go services</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/sky.min.css">
     <link rel="stylesheet"
@@ -60,18 +60,36 @@
         </section>
 
         <section>
-            <h2>Principles</h2>
-            <p>Table tests</p>
-            <p><i>stretchr/testify</i> for assertions</p>
+            <h3>Pyramid vs trophy</h3>
+            <img src="images/trophy.png" width="800px" alt="">
+            <div style="font-size: 10px;">https://symflower.com/en/company/blog/2023/what-is-the-testing-trophy/</div>
         </section>
 
         <section>
-            <h2>Domain model</h2>
+            <h2>Principles</h2>
+            <p>Layer-by-layer testing</p>
+            <p>Table tests everywhere</p>
+            <p>Comprehensive comparison</p>
+            <p>Randomized test data</p>
+        </section>
+
+        <section>
+            <h2>Service under test</h2>
+            <p>cart management of unique items</p>
+            <p><i>pgx</i> driver for Postgres</p>
+            <p><i>gin</i> framework for HTTP</p>
+            <p>hexagonal-like architecture</p>
+        </section>
+
+        <section>
+            <h2>Hexagonal architecture</h2>
+            <img src="images/hexagonal.png" width="580px" alt="">
+            <div style="font-size: 10px;">https://othercode.io/blog/hexagonal-architecture</div>
         </section>
 
         <section>
             <h2>Repository layer</h2>
-            <p>against a real database</p>
+            <p>test against a real database</p>
             <p style="font-size: 0.9em;">production engine version</p>
             <p>spin up containers from Go code:</p>
             <p><i><b>testcontainers-go</b></i>, <i>ory/dockertest</i></p>
@@ -107,7 +125,7 @@
 
         <section>
             <h2>Containers lifecycle</h2>
-            <p>prefer <b><i>stretchr/testify/suite</i></b> over</p>
+            <p>Prefer <b><i>stretchr/testify/suite</i></b> over</p>
             <p style="font-size: 0.95em;">- <i>TestMain</i></p>
             <p style="font-size: 0.95em;">- <i>sync.Once</i></p>
             <p style="font-size: 0.95em;">- per each test</p>
@@ -147,7 +165,7 @@
  }
 
  func (s *cartRepoSuite) TearDownSuite() {
-    suite.NoError(s.container.Terminate(ctx))
+    suite.NoError(s.container.Terminate(ctx)) // helping Ryuk
  }
              </code></pre>
         </section>
@@ -456,6 +474,65 @@
     assert.Equal(t, tt.statusCode, w.Code)
  }
             </code></pre>
+        </section>
+
+        <section>
+            <h2>Coverage report</h2>
+            <pre><code class="language-shell">
+ > go test ./... -v -coverprofile=coverage.out -race
+
+ > go tool cover -html=coverage.out -o coverage.html
+
+ > open coverage.html
+            </code></pre>
+
+            <p></p>
+
+            <pre><code class="language-yaml">
+ - name: Upload coverage to Coveralls
+   uses: coverallsapp/github-action@v2
+   with:
+      github-token: ${{ secrets.COVERALLS_TOKEN }}
+      path-to-lcov: coverage.out
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Misc</h2>
+            <p><i>pact-go</i>: contract testing</p>
+            <p><i>testifylint</i>: linter for testify</p>
+            <p>smoke+ testing in test clusters</p>
+        </section>
+
+        <section>
+            <h2>Takeaways</h2>
+            <table style="font-size: 85%;">
+                <thead>
+                <tr>
+                    <th>Layer</th>
+                    <th>Tools</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>All</td>
+                    <td><i>testify/assert+require</i>, <i>go-cmp</i>, <i>brianvoe/gofakeit</i></td>
+                </tr>
+                <tr>
+                    <td>Repository</td>
+                    <td><i>testcontainers-go</i>, <i>testify/suite</i>, <i>uber-go/goleak</i></td>
+                </tr>
+                <tr>
+                    <td>Service</td>
+                    <td><i>vektra/mockery</i>, <i>testify/mock</i></td>
+                </tr>
+                <tr>
+                    <td>HTTP</td>
+                    <td><i>httptest+</i>, <i>vektra/mockery</i>, <i>testify/mock</i></td>
+                </tr>
+
+                </tbody>
+            </table>
         </section>
 
         <section>
