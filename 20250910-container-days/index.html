@@ -67,17 +67,17 @@
 
         <section>
             <h2>Dual write problem</h2>
-            <p><i>Services A</i> and <i>B</i> are decoupled</p>
-            <p><i>Service A</i> writes to a DB and a message broker</p>
+            <p><i>Service A</i> writes to DB and message broker</p>
             <p>Inconsistent system state if any of writes fails</p>
+            <p>Conditional requirement: strong consistency</p>
         </section>
 
 
         <section>
             <h2>Naive approaches</h2>
-            <p>Write to DB first, then to broker</p>
-            <p>Write to broker first, then to DB</p>
-            <p>Write to broker inside DB tx, then commit</p>
+            <p>Write to DB first, then send to broker</p>
+            <p>Send to broker first, then write to DB</p>
+            <p>Send to broker inside DB tx, then commit</p>
         </section>
 
         <section>
@@ -95,6 +95,47 @@
             <img src="images/tx_send.png" alt="" height="500">
         </section>
 
+        <section>
+            <h2>Transactional outbox pattern</h2>
+            <img src="images/outbox_pattern.png" alt="" height="500">
+        </section>
+
+        <section>
+            <h2>Outbox table example</h2>
+            <pre><code class="language-sql">
+ CREATE TABLE outbox
+ (
+     id           BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+
+     payload      JSONB                               NOT NULL,
+
+     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+
+     -- additional metadata: event type, domain object type and id, topic, etc
+ );</code></pre>
+        </section>
+
+
+        <section>
+            <h2>Outbox pattern pros</h2>
+            <p>one of solutions to <i>dual write problem</i></p>
+            <p>+ Atomicity between orders and outbox messages</p>
+            <p>+ At least once delivery to message broker</p>
+        </section>
+
+        <section>
+            <h2>Outbox pattern cons</h2>
+            <p>- Message publication delay</p>
+            <p>- Extra code or deployment unit</p>
+            <p>- Consumer might need to deduplicate</p>
+            <p>- Increased database load</p>
+        </section>
+
+        <section>
+            <h2>Reading outbox</h2>
+            <p>Polling</p>
+            <p>Log-based CDC</p>
+        </section>
 
         <section>
             <h2>Thank you!</h2>
