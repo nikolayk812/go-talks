@@ -103,8 +103,8 @@
         <section>
             <h2>Outbox table example</h2>
             <pre><code class="language-sql">
- CREATE TABLE outbox
- (
+ CREATE TABLE outbox (
+
      id           BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 
      payload      JSONB                               NOT NULL,
@@ -133,9 +133,101 @@
 
         <section>
             <h2>Reading outbox</h2>
-            <p>Polling</p>
-            <p>Log-based CDC</p>
+            <p>Periodic polling</p>
+            <p>Log-based change data capture (CDC)</p>
         </section>
+
+        <section>
+            <h2>Periodic polling</h2>
+            <ol>
+                <li>SELECT using LIMIT</li>
+                <li>
+                    Options to mark published:
+
+                    <ol style="list-style-type: lower-alpha;">
+                        <li>DELETE by <i>ids</i></li>
+                        <li>UPDATE <i>published_at</i> by <i>ids</i></li>
+                        <li>Store latest <i>id</i> in a separate table</li>
+                    </ol>
+                </li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>Go libraries with polling</h2>
+            <p>Watermill-SQL</p>
+            <p>pgx-outbox</p>
+            <p>go-outbox, outboxer</p>
+            <p>General purpose queues, e.g. River</p>
+        </section>
+
+        <section>
+            <h2>pgx-outbox</h2>
+            <p>Focus on <i>Postgres</i> and <i>pgx</i> driver</p>
+            <p>Implements Message, Writer, Forwarder, Reader, Publisher</p>
+            <p>UPDATE approach to mark published messages</p>
+            <p style="font-size: 0.9em;">Inspired by Watermill Forwarder</p>
+        </section>
+
+        <section>
+            <h2>pgx-outbox architecture</h2>
+            <img src="images/pgx_outbox.png" alt="" height="500">
+        </section>
+
+        <section>
+            <h2>Outbox Writer</h2>
+            <pre><code class="language-golang">
+ type Writer interface {
+
+     // supports both pgx.Tx and stdlib *sql.Tx
+     Write(ctx, tx Tx, message Message) (int64, error)
+
+     // pgx transaction only to invoke SendBatch and Prepare methods
+     WriteBatch(ctx, tx pgx.Tx, messages []Message) ([]int64, error)
+
+ }</code></pre>
+        </section>
+
+        <section>
+            <h2>Demo?</h2>
+        </section>
+
+        <section>
+            <h2>Polling cons</h2>
+            <p>Low publication delay vs polling too often</p>
+            <p>Risk of starving other workloads under <b>high traffic</b></p>
+            <p>UPDATE and DELETE create dead tuples (MVCC)</p>
+            <p>Autovacuum settings might need tuning</p>
+        </section>
+
+        <section>
+            <h2>Log-based CDC</h2>
+            <p>Write-Ahead Log (WAL) in Postgres</p>
+
+            Events emitted in exact commit order → strong consistency
+
+            Avoids costly periodic polling → reduces DB load
+
+            Low latency event propagation (often tens of milliseconds)
+
+            Preferred for scalability and efficiency
+        </section>
+
+        <section>
+            <h2>Write-Ahead Log</h2>
+            <p><b>binary</b> log of all <b>row</b>-level changes</p>
+            <p>written before data files, ensures crash recovery</p>
+            <p>changes grouped per transaction in commit order</p>
+            <p>exists in shared buffer, flushed to on-disk files</p>
+        </section>
+
+
+        <section>
+            <h3>Postgres process and memory architecture</h3>
+            <img src="images/pg_arch.png" alt="" height="500">
+            <div style="font-size: 12px;">https://www.cloudduggu.com/postgresql/architecture/</div>
+        </section>
+
 
         <section>
             <h2>Thank you!</h2>
