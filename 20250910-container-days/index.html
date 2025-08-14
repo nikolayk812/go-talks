@@ -195,7 +195,7 @@
         <section>
             <h2>Polling cons</h2>
             <p>Low publication delay vs polling too often</p>
-            <p>Risk of starving other workloads under <b>high traffic</b></p>
+            <p>Risk of starving other workloads under high traffic</p>
             <p>UPDATE and DELETE create dead tuples (MVCC)</p>
             <p>Autovacuum settings might need tuning</p>
         </section>
@@ -203,19 +203,14 @@
         <section>
             <h2>Log-based CDC</h2>
             <p>Write-Ahead Log (WAL) in Postgres</p>
-
-            Events emitted in exact commit order → strong consistency
-
-            Avoids costly periodic polling → reduces DB load
-
-            Low latency event propagation (often tens of milliseconds)
-
-            Preferred for scalability and efficiency
+            <p>+ Lower publication delay (tens of ms)</p>
+            <p>+ Reduced DB load: avoids polling, dead tuples</p>
+            <p>+ Events emitted in exact commit order</p>
         </section>
 
         <section>
             <h2>Write-Ahead Log</h2>
-            <p><b>binary</b> log of all <b>row</b>-level changes</p>
+            <p>append-only <b>binary</b> log of all <b>row</b>-level changes</p>
             <p>written before data files, ensures crash recovery</p>
             <p>changes grouped per transaction in commit order</p>
             <p>exists in shared buffer, flushed to on-disk files</p>
@@ -228,6 +223,168 @@
             <div style="font-size: 12px;">https://www.cloudduggu.com/postgresql/architecture/</div>
         </section>
 
+        <section>
+            <h4>Transactions example</h4>
+            <img src="images/transactions.png" alt="" height="500">
+            <div style="font-size: 12px;">https://www.dolthub.com/blog/2024-03-08-postgres-logical-replication/</div>
+        </section>
+
+        <section>
+            <h3>Corresponding WAL</h3>
+            <img src="images/wal.png" alt="" height="500">
+            <div style="font-size: 12px;">https://www.dolthub.com/blog/2024-03-08-postgres-logical-replication/</div>
+        </section>
+
+        <section>
+            <h2>Reading from WAL</h2>
+            <p>Logical replication protocol in Postgres</p>
+            <p>Debezium (Server)</p>
+            <p>jackc/pglogrepl</p>
+            <p>PeerDB</p>
+        </section>
+
+        <section>
+            <h2>Debezium</h2>
+            <p>Connectors for Kafka Connect or standalone Server</p>
+            <p>Consumes DB events and can send to sinks</p>
+            <p>Very mature, started in 2015 by Red Hat</p>
+            <p>Open source, written in <b>Java</b></p>
+            <!-- mention CRD / FES? -->
+        </section>
+
+        <section>
+            <h3>Debezium architecture</h3>
+            <img src="images/debezium.png" alt="" height="250" style="margin-top: 0; margin-bottom: 10px;">
+            <img src="images/debezium_server.png" alt="" height="300" style="margin-top: 0;">
+        </section>
+
+        <section>
+            <h2>jackc/pglogrepl</h2>
+            <p>decodes logical replication messages</p>
+            <p>includes a basic example</p>
+            <p>400 stars, 200 users</p>
+            <p>same author as <i>pgx</i> driver</p>
+            <p>not actively maintained</p>
+        </section>
+
+
+        <section>
+            <h2>Concepts</h2>
+            <p>Publication</p>
+            <p>Replication slot</p>
+            <p>Decoding plugin</p>
+            <p>Log sequence number (LSN)</p>
+        </section>
+
+        <section>
+            <h2>Publication</h2>
+            <p>definition of tables and operations to be published to clients</p>
+            <pre><code class="language-sql">
+ CREATE PUBLICATION pub1 FOR TABLE t1, t2;
+ -- ALL TABLES
+ -- WITH (publish = 'insert, update', 'delete', 'truncate');
+
+ SELECT * FROM pg_publication;
+            </code></pre>
+
+            <p></p>
+
+            <pre><code class="language-go">
+ query := "CREATE PUBLICATION pub1 FOR TABLE t1, t2"
+
+ result := conn.Exec(ctx, query) // low level *pgconn.PgConn
+ defer result.Close()
+
+ _, err := result.ReadAll()
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Replication slot</h2>
+            <p>named position in WAL acknowledged by a single client</p>
+
+            <pre><code class="language-sql">
+ SELECT pg_create_logical_replication_slot('slot', 'pgoutput');
+
+ SELECT * FROM pg_replication_slots;
+            </code></pre>
+
+            <p></p>
+
+            <pre><code class="language-go">
+ pglogrepl.CreateReplicationSlot(ctx, conn, "slot", "pgoutput")
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Decoding plugins</h2>
+            <p><b>pgoutput</b> - built-in, default</p>
+            <p>test_decoding - built-in, only for testing</p>
+            <p>wal2json - 3rd party, produces JSON</p>
+            <p>decoderbufs, pglogical</p>
+        </section>
+
+        <section>
+            <h2>pgoutput arguments</h2>
+
+            <pre><code class="language-go">
+ pluginArguments := []string{
+    "proto_version '2'", // versions 3 and 4 are not supported by the lib
+    fmt.Sprintf("publication_names '%s'", "pub1"),
+    "messages 'false'",  // pg_logical_emit_message() is not used
+    "streaming 'false'", // receive only committed transactions
+ }
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Starting replication</h2>
+
+            <p>LSN is a unique 64-bit address in WAL stream, e.g. 0/AC90FD</p>
+
+            <pre><code class="language-sql">
+ START_REPLICATION SLOT slot LOGICAL 0/AC90FD -- LSN where to start
+    ("proto_version" '2',
+    "publication_names" 'pub1',
+    "messages" 'false',
+    "streaming" 'false');
+            </code></pre>
+
+            <p></p>
+
+            <pre><code class="language-go">
+ sysIdent, err := pglogrepl.IdentifySystem(ctx, conn)
+
+ pglogrepl.StartReplication(ctx, conn, "slot", sysIdent.XLogPos,
+    pglogrepl.StartReplicationOptions{PluginArgs: pluginArguments})
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Message loop</h2>
+
+            <pre><code class="language-go">
+ for {
+    var rawMsg pgproto3.BackendMessage
+    rawMsg, err := conn.ReceiveMessage(ctx)
+
+    switch msg.Data[0] {
+    // XLog is historical name for WAL
+    case pglogrepl.XLogDataByteID: // 'w'
+        err = handleXLogData(msg.Data[1:]) // actual data
+
+    case pglogrepl.PrimaryKeepaliveMessageByteID: // 'k'
+        err = handlePrimaryKeepalive(msg.Data[1:])
+    }
+ }
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Pitfalls</h2>
+            <p>WAL bloat</p>
+            <p>Recent bug in Postgres</p>
+        </section>
 
         <section>
             <h2>Thank you!</h2>
