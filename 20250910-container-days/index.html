@@ -61,6 +61,13 @@
         </section>
 
         <section>
+            <h2>Talk inspirations</h2>
+            <p>Revisiting the Outbox Pattern - Gunnar Morling</p>
+            <p>Personal experience</p>
+            <p>Company experience</p>
+        </section>
+
+        <section>
             <h2>Dual write problem</h2>
             <img src="images/dual_write.png" alt="" height="500">
         </section>
@@ -68,16 +75,15 @@
         <section>
             <h2>Dual write problem</h2>
             <p><i>Service A</i> writes to DB and message broker</p>
-            <p>Inconsistent system state if any of writes fails</p>
-            <p>Conditional requirement: strong consistency</p>
+            <p><b>Inconsistent</b> system state if any of writes fails</p>
         </section>
 
 
         <section>
             <h2>Naive approaches</h2>
-            <p>Write to DB first, then send to broker</p>
-            <p>Send to broker first, then write to DB</p>
-            <p>Send to broker inside DB tx, then commit</p>
+            <p>▪ Write to DB first, then send to broker</p>
+            <p>▪ Send to broker first, then write to DB</p>
+            <p>▪ Send to broker within DB tx before commit</p>
         </section>
 
         <section>
@@ -111,61 +117,62 @@
 
      created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 
-     -- additional metadata: event type, domain object type and id, topic, etc
+     -- additional metadata: event type, domain object type and id, topic
  );</code></pre>
         </section>
 
 
         <section>
             <h2>Outbox pattern pros</h2>
-            <p>one of solutions to <i>dual write problem</i></p>
-            <p>+ Atomicity between orders and outbox messages</p>
-            <p>+ At least once delivery to message broker</p>
+            <p>one of solutions to dual write problem</p>
+            <p>➕ <i>Atomicity</i> between orders and outbox messages</p>
+            <p>➕ At least once delivery to message broker</p>
         </section>
 
         <section>
             <h2>Outbox pattern cons</h2>
-            <p>- Message publication delay</p>
-            <p>- Extra code or deployment unit</p>
-            <p>- Consumer might need to deduplicate</p>
-            <p>- Increased database load</p>
+            <p>➖ Message publication delay</p>
+            <p>➖ Extra code or deployment unit</p>
+            <p>➖ Consumer might need to deduplicate</p>
+            <p>➖ Increased database load</p>
         </section>
 
         <section>
-            <h2>Reading outbox</h2>
+            <h2>Reading from outbox</h2>
+            <img src="images/outbox_table.png" alt="" height="100">
             <p>Periodic polling</p>
-            <p>Log-based change data capture (CDC)</p>
+            <p style="font-size: 0.9em;">Log-based change data capture (CDC)</p>
         </section>
 
         <section>
             <h2>Periodic polling</h2>
-            <ol>
-                <li>SELECT using LIMIT</li>
+            <ol style="list-style-type: none;">
+                <li>▪ SELECT (with LIMIT)</li>
                 <li>
-                    Options to mark published:
+                    ▪ Options to mark published:
 
                     <ol style="list-style-type: lower-alpha;">
-                        <li>DELETE by <i>ids</i></li>
-                        <li>UPDATE <i>published_at</i> by <i>ids</i></li>
-                        <li>Store latest <i>id</i> in a separate table</li>
+                        <li>DELETE by ids</li>
+                        <li>UPDATE <i>published_at</i> by ids</li>
+                        <li>Store latest id in a separate table</li>
                     </ol>
                 </li>
             </ol>
         </section>
 
         <section>
-            <h2>Go libraries with polling</h2>
+            <h2>Go libs with polling</h2>
             <p>Watermill-SQL</p>
             <p>pgx-outbox</p>
             <p>go-outbox, outboxer</p>
-            <p>General purpose queues, e.g. River</p>
+            <p>general purpose queues: River, etc</p>
         </section>
 
         <section>
             <h2>pgx-outbox</h2>
-            <p>Focus on <i>Postgres</i> and <i>pgx</i> driver</p>
-            <p>Implements Message, Writer, Forwarder, Reader, Publisher</p>
-            <p>UPDATE approach to mark published messages</p>
+            <p>Strong focus on <i>Postgres</i> and <i>pgx</i> driver</p>
+            <p>Implements <i>Message</i>, <i>Writer</i>, <i>Forwarder</i></p>
+            <p style="font-size: 0.95em;">UPDATE approach to mark published messages</p>
             <p style="font-size: 0.9em;">Inspired by Watermill Forwarder</p>
         </section>
 
@@ -189,23 +196,24 @@
         </section>
 
         <section>
-            <h2>Demo?</h2>
+            <h2>Tracing with otelpgx</h2>
+            <img src="images/tracing.png" alt="" height="200">
         </section>
 
         <section>
             <h2>Polling cons</h2>
-            <p>Low publication delay vs polling too often</p>
-            <p>Risk of starving other workloads under high traffic</p>
-            <p>UPDATE and DELETE create dead tuples (MVCC)</p>
-            <p>Autovacuum settings might need tuning</p>
+            <p>➖ Low publication delay vs polling too often</p>
+            <p>➖ Risk of starving other workloads under high traffic</p>
+            <p>➖ UPDATE and DELETE create dead tuples (MVCC)</p>
+            <p>➖ Autovacuum settings might need tuning</p>
         </section>
 
         <section>
             <h2>Log-based CDC</h2>
             <p>Write-Ahead Log (WAL) in Postgres</p>
-            <p>+ Lower publication delay (tens of ms)</p>
-            <p>+ Reduced DB load: avoids polling, dead tuples</p>
-            <p>+ Events emitted in exact commit order</p>
+            <p>➕ Lower publication delay (tens of ms)</p>
+            <p>➕ Reduced DB load: avoids polling, dead tuples</p>
+            <p>➕ Events emitted in exact commit order</p>
         </section>
 
         <section>
@@ -238,9 +246,9 @@
         <section>
             <h2>Reading from WAL</h2>
             <p>Logical replication protocol in Postgres</p>
-            <p>Debezium (Server)</p>
-            <p>jackc/pglogrepl</p>
-            <p>PeerDB</p>
+            <p>▪ Debezium* (Server)</p>
+            <p>▪ <i>jackc/pglogrepl</i></p>
+            <p>▪ PeerDB</p>
         </section>
 
         <section>
@@ -249,13 +257,51 @@
             <p>Consumes DB events and can send to sinks</p>
             <p>Very mature, started in 2015 by Red Hat</p>
             <p>Open source, written in <b>Java</b></p>
-            <!-- mention CRD / FES? -->
         </section>
 
         <section>
-            <h3>Debezium architecture</h3>
-            <img src="images/debezium.png" alt="" height="250" style="margin-top: 0; margin-bottom: 10px;">
-            <img src="images/debezium_server.png" alt="" height="300" style="margin-top: 0;">
+            <h3>Debezium architectures</h3>
+            <img src="images/debezium.png" alt="" height="240" style="margin-top: 0; margin-bottom: 5px;">
+            <img src="images/debezium_server.png" alt="" height="280" style="margin-top: 0; margin-bottom: 5px;">
+            <div style="font-size: 12px;">https://debezium.io/documentation/reference/stable/architecture.html</div>
+        </section>
+
+        <section>
+            <h3>Debezium Server config example</h3>
+            <pre style="font-size: 0.75em !important;"><code class="language-yaml">
+ # Source: Postgres
+ debezium.source.connector.class=io.debezium...PostgresConnector
+ debezium.source.database.{*}=
+ debezium.source.plugin.name=pgoutput
+ debezium.source.publication.name=debezium_publication
+ debezium.source.slot.name=debezium_slot
+ debezium.source.table.include.list=public.outbox_messages
+
+ # Sink: HTTP
+ debezium.sink.type=http
+ debezium.sink.http.url=http://http-listener:8080
+
+ # Output format & single message transformation (SMT)
+ debezium.format.{key,value}=json
+ debezium.transforms=unwrap
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Debezium + Go</h2>
+            <p>▪ Kubernetes CRD + Operator for CDC</p>
+            <p>▪ Operator creates single-pod Deployment</p>
+            <p>▪ Pod is powered by Debezium,</p>
+            <p>captures outbox inserts in <i>source</i> DB,</p>
+            <p>publishes to message broker sink</p>
+        </section>
+
+        <section>
+            <h2>Outbox cleanup</h2>
+        </section>
+
+        <section>
+            <h2>Debezium Demo?</h2>
         </section>
 
         <section>
