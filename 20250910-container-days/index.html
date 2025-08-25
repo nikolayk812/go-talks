@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/theme/sky.min.css">
     <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
     <style>
         /* Keep existing heading text-transform override */
         h1, h2, h3, h4, h5, h6 {
@@ -140,8 +140,8 @@
         <section>
             <h2>Reading from outbox</h2>
             <img src="images/outbox_table.png" alt="" height="100">
-            <p>Periodic polling</p>
-            <p style="font-size: 0.9em;">Log-based change data capture (CDC)</p>
+            <p>▪ Periodic polling</p>
+            <p style="font-size: 0.9em;">▪ Log-based change data capture (CDC)</p>
         </section>
 
         <section>
@@ -162,10 +162,10 @@
 
         <section>
             <h2>Go libs with polling</h2>
-            <p>Watermill-SQL</p>
-            <p>pgx-outbox</p>
-            <p>go-outbox, outboxer</p>
-            <p>general purpose queues: River, etc</p>
+            <p>▪ Watermill-SQL</p>
+            <p>▪ pgx-outbox</p>
+            <p>▪ go-outbox, ▪ outboxer</p>
+            <p>general purpose queues: ▪ River, etc</p>
         </section>
 
         <section>
@@ -218,10 +218,10 @@
 
         <section>
             <h2>Write-Ahead Log</h2>
-            <p>append-only <b>binary</b> log of all <b>row</b>-level changes</p>
-            <p>written before data files, ensures crash recovery</p>
-            <p>changes grouped per transaction in commit order</p>
-            <p>exists in shared buffer, flushed to on-disk files</p>
+            <p>▪ append-only <b>binary</b> log of all <b>row</b>-level changes</p>
+            <p>▪ written before data files, ensures crash recovery</p>
+            <p>▪ changes grouped per transaction in commit order</p>
+            <p>▪ exists in shared buffer, flushed to on-disk files</p>
         </section>
 
 
@@ -239,14 +239,14 @@
 
         <section>
             <h3>Corresponding WAL</h3>
-            <img src="images/wal.png" alt="" height="500">
+            <img src="images/wal.png" alt="" height="400">
             <div style="font-size: 12px;">https://www.dolthub.com/blog/2024-03-08-postgres-logical-replication/</div>
         </section>
 
         <section>
             <h2>Reading from WAL</h2>
             <p>Logical replication protocol in Postgres</p>
-            <p>▪ Debezium* (Server)</p>
+            <p>▪ Debezium ☕ (Server)</p>
             <p>▪ <i>jackc/pglogrepl</i></p>
             <p>▪ PeerDB</p>
         </section>
@@ -267,7 +267,7 @@
         </section>
 
         <section>
-            <h3>Debezium Server config example</h3>
+            <h3>Server config example</h3>
             <pre style="font-size: 0.75em !important;"><code class="language-yaml">
  # Source: Postgres
  debezium.source.connector.class=io.debezium...PostgresConnector
@@ -288,6 +288,15 @@
         </section>
 
         <section>
+            <h2>Outbox event router</h2>
+            <p>▪ Implemented as Kafka Connect SMT</p>
+            <p>▪ Suggests outbox table schema:</p>
+            <p style="font-size: 0.9em;"><i>id, aggregateid, aggregatetype, type, payload</i></p>
+            <p>▪ Routes to Kafka topic based on <i>aggregatetype</i></p>
+            <p>▪ Uses <i>aggregateid</i> as message key</p>
+        </section>
+
+        <section>
             <h2>Debezium + Go</h2>
             <p>▪ Kubernetes CRD + Operator for CDC</p>
             <p>▪ Operator creates single-pod Deployment</p>
@@ -296,9 +305,6 @@
             <p>publishes to message broker sink</p>
         </section>
 
-        <section>
-            <h2>Outbox cleanup</h2>
-        </section>
 
         <section>
             <h2>Debezium Demo?</h2>
@@ -324,7 +330,7 @@
 
         <section>
             <h2>Publication</h2>
-            <p>definition of tables and operations to be published to clients</p>
+            <p>definition of tables and CDC operations to be published to consumers</p>
             <pre><code class="language-sql">
  CREATE PUBLICATION pub1 FOR TABLE t1, t2;
  -- ALL TABLES
@@ -347,7 +353,7 @@
 
         <section>
             <h2>Replication slot</h2>
-            <p>named position in WAL acknowledged by a single client</p>
+            <p>named position in WAL to track a replication consumer progress</p>
 
             <pre><code class="language-sql">
  SELECT pg_create_logical_replication_slot('slot', 'pgoutput');
@@ -386,7 +392,7 @@
         <section>
             <h2>Starting replication</h2>
 
-            <p>LSN is a unique 64-bit address in WAL stream, e.g. 0/AC90FD</p>
+            <p>LSN is a unique 64-bit address in WAL, e.g. 0/AC90FD</p>
 
             <pre><code class="language-sql">
  START_REPLICATION SLOT slot LOGICAL 0/AC90FD -- LSN where to start
@@ -427,9 +433,36 @@
         </section>
 
         <section>
+            <h2>Handling data</h2>
+            <p>▪ Insert messages</p>
+            <p>▪ Relation messages</p>
+            <p>▪ Status updates:</p>
+            <p style="font-size: 0.9em;">write, flush, apply positions</p>
+        </section>
+
+        <section>
+            <img src="images/headaches.png" alt="" height="550">
+        </section>
+
+        <section>
+            <h2>PeerDB</h2>
+            <p>▪ efficient data streaming from Postgres</p>
+            <p>▪ written in Go (and Rust)</p>
+            <p>▪ uses <i>Temporal</i> orchestration engine</p>
+            <p>▪ open-source, Elastic License 2.0 (ELv2)</p>
+            <p style="font-size: 0.9em;">▪ acquired by ClickHouse, integrated to ClickPipes</p>
+        </section>
+
+
+        <section>
             <h2>Pitfalls</h2>
             <p>WAL bloat</p>
             <p>Recent bug in Postgres</p>
+        </section>
+
+        <section>
+            <h2>Takeaways</h2>
+
         </section>
 
         <section>
