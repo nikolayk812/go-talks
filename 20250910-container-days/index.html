@@ -44,12 +44,8 @@
 <div class="reveal">
     <div class="slides">
         <section>
-            <h3>Revisiting the Outbox Pattern in Go</h3>
-            <p style="font-size: 0.95em;">ContainerDays Hamburg</p>
-            <p style="font-size: 0.8em;">10 Sep 2025</p>
-            <p>Nikolay Kuznetsov</p>
-            <img src="images/gopher.png" alt=""
-                 style="position: absolute; top: 50%; left: 72%; transform: translate(-50%, -50%); width: 140px;">
+            <img src="images/first_slide.png"
+                 style="width: 100%; height: 100%; object-fit: cover; display: block; margin: 0; padding: 0;">
         </section>
 
         <section>
@@ -62,9 +58,9 @@
 
         <section>
             <h2>Talk inspirations</h2>
-            <p>Revisiting the Outbox Pattern - Gunnar Morling</p>
-            <p>Personal experience</p>
-            <p>Company experience</p>
+            <p>▪ Revisiting the Outbox Pattern</p>
+            <p style="font-size: 0.9em;">article by Gunnar Morling</p>
+            <p>▪ Personal experience</p>
         </section>
 
         <section>
@@ -170,10 +166,10 @@
 
         <section>
             <h2>pgx-outbox</h2>
-            <p>Strong focus on <i>Postgres</i> and <i>pgx</i> driver</p>
-            <p>Implements <i>Message</i>, <i>Writer</i>, <i>Forwarder</i></p>
-            <p style="font-size: 0.95em;">UPDATE approach to mark published messages</p>
-            <p style="font-size: 0.9em;">Inspired by Watermill Forwarder</p>
+            <p>▪ Strong focus on <i>Postgres</i> and <i>pgx</i> driver</p>
+            <p>▪ Implements <i>Message</i>, <i>Writer</i>, <i>Forwarder</i></p>
+            <p style="font-size: 0.95em;">▪ UPDATE approach to mark published messages</p>
+            <p style="font-size: 0.9em;">▪ Inspired by Watermill Forwarder</p>
         </section>
 
         <section>
@@ -246,7 +242,7 @@
         <section>
             <h2>Reading from WAL</h2>
             <p>Logical replication protocol in Postgres</p>
-            <p>▪ Debezium ☕ (Server)</p>
+            <p>▪ Debezium (Server)</p>
             <p>▪ <i>jackc/pglogrepl</i></p>
             <p>▪ PeerDB</p>
         </section>
@@ -305,11 +301,6 @@
             <p>publishes to message broker sink</p>
         </section>
 
-
-        <section>
-            <h2>Debezium Demo?</h2>
-        </section>
-
         <section>
             <h2>jackc/pglogrepl</h2>
             <p>decodes logical replication messages</p>
@@ -330,7 +321,7 @@
 
         <section>
             <h2>Publication</h2>
-            <p>definition of tables and CDC operations to be published to consumers</p>
+            <p style="font-size: 0.9em;">Definition of tables and CDC operations to be published to consumers</p>
             <pre><code class="language-sql">
  CREATE PUBLICATION pub1 FOR TABLE t1, t2;
  -- ALL TABLES
@@ -353,7 +344,7 @@
 
         <section>
             <h2>Replication slot</h2>
-            <p>named position in WAL to track a replication consumer progress</p>
+            <p>Named position in WAL to track a replication consumer progress</p>
 
             <pre><code class="language-sql">
  SELECT pg_create_logical_replication_slot('slot', 'pgoutput');
@@ -441,23 +432,27 @@
         </section>
 
         <section>
-            <img src="images/headaches.png" alt="" height="550">
-        </section>
-
-        <section>
             <h2>PeerDB</h2>
-            <p>▪ efficient data streaming from Postgres</p>
+            <p>▪ efficient data streaming from DBs</p>
             <p>▪ written in Go (and Rust)</p>
             <p>▪ uses <i>Temporal</i> orchestration engine</p>
             <p>▪ open-source, Elastic License 2.0 (ELv2)</p>
             <p style="font-size: 0.9em;">▪ acquired by ClickHouse, integrated to ClickPipes</p>
         </section>
 
+        <section>
+            <h2>Peers</h2>
+            <img src="images/peers.png" alt="" height="300">
+        </section>
 
         <section>
             <h2>Pitfalls</h2>
             <p>WAL bloat</p>
             <p>Recent bug in Postgres</p>
+        </section>
+
+        <section>
+            <h2>Alternatives</h2>
         </section>
 
         <section>
