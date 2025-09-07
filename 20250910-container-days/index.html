@@ -307,7 +307,7 @@
             <p>includes a basic example</p>
             <p>400 stars, 200 users</p>
             <p>same author as <i>pgx</i> driver</p>
-            <p>not actively maintained</p>
+            <p style="font-size: 0.95em;">no active development</p>
         </section>
 
 
@@ -428,7 +428,12 @@
             <p>▪ Insert messages</p>
             <p>▪ Relation messages</p>
             <p>▪ Status updates:</p>
-            <p style="font-size: 0.9em;">write, flush, apply positions</p>
+            <p style="font-size: 0.9em;"><i>write, flush, apply</i> positions</p>
+        </section>
+
+        <section>
+            <h3>Logical replication is hard !</h3>
+            <img src="images/tired.jpg" alt="" height="530">
         </section>
 
         <section>
@@ -442,29 +447,43 @@
 
         <section>
             <h2>Peers</h2>
+            <p>connection definition to a data source/sink</p>
             <img src="images/peers.png" alt="" height="300">
         </section>
 
         <section>
-            <h2>Pitfalls</h2>
-            <p>WAL bloat</p>
-            <p>Recent bug in Postgres</p>
+            <h2>Mirrors</h2>
+            <p>replication flow that continuously syncs data</p>
+            <img src="images/mirror.png" alt="" height="300">
         </section>
 
         <section>
-            <h2>Alternatives</h2>
+            <h2>Message example</h2>
+            <p style="font-size: 0.8em;">▪ Lua script for single message transformation</p>
+            <p style="font-size: 0.8em;">▪ <i>gofakeit</i> to generate fake data</p>
+            <img src="images/message.png" alt="" height="350">
+        </section>
+
+        <section>
+            <h2>Replication pitfalls</h2>
+            <p>WAL <b>bloat</b> can fill storage,</p>
+            <p>if replication slot is inactive or not advancing</p>
+            <p>due to bugs in replication clients or Postgres.</p>
         </section>
 
         <section>
             <h2>Takeaways</h2>
+            <p>▪ Avoid microservices if not needed</p>
+            <p>▪ Low traffic → <i>Watermill-SQL, pgx-outbox</i></p>
+            <p>▪ High traffic → <i>Debezium, PeerDB</i></p>
 
         </section>
 
         <section>
             <h2>Thank you!</h2>
-            <p><a href="https://github.com/jackc/pglogrepl">jackc/pglogrepl</a></p>
-            <p><a href="https://github.com/nikolayk812/pgx-outbox/tree/main/wal">nikolayk812/pgx-outbox/wal</a></p>
             <p><a href="https://github.com/PeerDB-io/peerdb">PeerDB-io/peerdb</a></p>
+            <p><a href="https://github.com/jackc/pglogrepl">jackc/pglogrepl</a></p>
+            <p style="font-size: 0.9em;"><a href="https://github.com/nikolayk812/pgx-outbox">nikolayk812/pgx-outbox</a></p>
         </section>
 
     </div>
