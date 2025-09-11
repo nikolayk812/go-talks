@@ -50,7 +50,7 @@
 
         <section>
             <h2>About me</h2>
-            <p>Senior Software Engineer</p>
+            <p>Senior Software <a href="https://www.linkedin.com/in/nkuznetsov/">Engineer</a></p>
             <p><span style="color: orange;">Zalando</span> Helsinki 🇫🇮</p>
             <p>C → Java → Kotlin → Go</p>
             <p>Author of <a href="https://github.com/nikolayk812/pgx-outbox">pgx-outbox</a> library</p>
@@ -58,7 +58,7 @@
 
         <section>
             <h2>Talk inspirations</h2>
-            <p>▪ Revisiting the Outbox Pattern</p>
+            <p>▪ <a href="https://www.decodable.co/blog/revisiting-the-outbox-pattern">Revisiting the Outbox Pattern</a></p>
             <p style="font-size: 0.9em;">article by Gunnar Morling</p>
             <p>▪ Personal experience</p>
         </section>
@@ -158,8 +158,8 @@
 
         <section>
             <h2>Go libs with polling</h2>
-            <p>▪ Watermill-SQL</p>
-            <p>▪ pgx-outbox</p>
+            <p>▪ <a href="https://github.com/ThreeDotsLabs/watermill-sql">Watermill-SQL</a></p>
+            <p>▪ <a href="https://github.com/nikolayk812/pgx-outbox">pgx-outbox</a></p>
             <p>▪ go-outbox, ▪ outboxer</p>
             <p>general purpose queues: ▪ River, etc</p>
         </section>
@@ -200,12 +200,12 @@
             <h2>Polling cons</h2>
             <p>➖ Low publication delay vs polling too often</p>
             <p>➖ Risk of starving other workloads under high traffic</p>
-            <p>➖ UPDATE and DELETE create dead tuples (MVCC)</p>
-            <p>➖ Autovacuum settings might need tuning</p>
+            <p>➖ UPDATE and DELETE create dead tuples (<a href="https://www.cs.cmu.edu/~pavlo/blog/2023/04/the-part-of-postgresql-we-hate-the-most.html">MVCC</a>)</p>
+            <p>➖ Autovacuum settings might need <a href="https://www.enterprisedb.com/blog/autovacuum-tuning-basics">tuning</a></p>
         </section>
 
         <section>
-            <h2>Log-based CDC</h2>
+            <h2>Log-based <a href="https://www.decodable.co/blog/why-do-i-need-cdc">CDC</a></h2>
             <p>Write-Ahead Log (WAL) in Postgres</p>
             <p>➕ Lower publication delay (tens of ms)</p>
             <p>➕ Reduced DB load: avoids polling, dead tuples</p>
@@ -242,9 +242,9 @@
         <section>
             <h2>Reading from WAL</h2>
             <p>Logical replication protocol in Postgres</p>
-            <p>▪ Debezium (Server)</p>
-            <p>▪ <i>jackc/pglogrepl</i></p>
-            <p>▪ PeerDB</p>
+            <p>▪ <a href="https://debezium.io/">Debezium (Server)</a></p>
+            <p>▪ <i><a href="https://github.com/jackc/pglogrepl">jackc/pglogrepl</a></i></p>
+            <p>▪ <a href="https://docs.peerdb.io/introduction">PeerDB</a></p>
         </section>
 
         <section>
@@ -284,7 +284,7 @@
         </section>
 
         <section>
-            <h2>Outbox event router</h2>
+            <h2><a href="https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html">Outbox event router</a></h2>
             <p>▪ Implemented as Kafka Connect SMT</p>
             <p>▪ Suggests outbox table schema:</p>
             <p style="font-size: 0.9em;"><i>id, aggregateid, aggregatetype, type, payload</i></p>
@@ -466,7 +466,7 @@
 
         <section>
             <h2>Replication pitfalls</h2>
-            <p>WAL <b>bloat</b> can fill storage,</p>
+            <p><a href="https://www.morling.dev/blog/mastering-postgres-replication-slots/">WAL <b>bloat</b></a> can fill storage,</p>
             <p>if replication slot is inactive or not advancing</p>
             <p>due to bugs in replication clients or Postgres.</p>
         </section>
@@ -483,7 +483,8 @@
             <h2>Thank you!</h2>
             <p><a href="https://github.com/PeerDB-io/peerdb">PeerDB-io/peerdb</a></p>
             <p><a href="https://github.com/jackc/pglogrepl">jackc/pglogrepl</a></p>
-            <p style="font-size: 0.9em;"><a href="https://github.com/nikolayk812/pgx-outbox">nikolayk812/pgx-outbox</a></p>
+            <p style="font-size: 0.9em;"><a href="https://github.com/nikolayk812/pgx-outbox">nikolayk812/pgx-outbox</a>
+            </p>
         </section>
 
     </div>
