@@ -1,6 +1,7 @@
 # go-talks
 
 ## 2026
+* 2026-05-20 Kubernetes Community Days Helsinki - Type-safe Postgres access in cloud-native applications with sqlc [[slides]](./20260520-kcd-helsinki/slides.pdf)
 * 2026-02-12 ContainerDays London - Practical sqlc: leveraging SQL-first code generation in Go [[slides]](https://nikolayk812.github.io/go-talks/20260212-cds-london/slides.pdf)
 * 2026-02-01 FOSDEM Brussels - Extending sqlc: augmented generation of repositories in Go [[slides]](https://nikolayk812.github.io/go-talks/20260201-fosdem-go/slides.pdf) [[video]](https://mirrors.dotsrc.org/fosdem/2026/ub5132/BRHJUC-extending_sqlc_augmented_generation_of_repositories_in_go.av1.webm)
 
